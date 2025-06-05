@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
+import UpdateProfile from "./components/UpdateProfile";
 
 // Firebase config
 const firebaseConfig = {
@@ -27,6 +28,7 @@ function App() {
                 const userList = querySnapshot.docs.map(doc => {
                     const data = doc.data();
                     return {
+                        id: doc.id,
                         username: data.username || "No username",
                         password: data.password || "No password"
                     };
@@ -41,19 +43,38 @@ function App() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 flex flex-col items-center">
-            <h1 className="text-2xl font-bold mb-4">Users & Passwords</h1>
-            <ul className="bg-white rounded-xl shadow-md p-4 w-full max-w-md space-y-2">
-                {users.length > 0 ? (
-                    users.map((user, index) => (
-                        <li key={index} className="text-gray-800 border-b last:border-b-0 pb-1">
-                            <strong>{user.username}</strong>: {user.password}
-                        </li>
-                    ))
-                ) : (
-                    <li className="text-gray-500">No users found.</li>
-                )}
-            </ul>
+        <div className="min-h-screen bg-gray-100 p-4">
+            <div className="max-w-4xl mx-auto">
+                <h1 className="text-2xl font-bold mb-4 text-center">Users & Passwords</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-xl shadow-md p-4">
+                        <h2 className="text-xl font-semibold mb-4">Current Users</h2>
+                        <ul className="space-y-2">
+                            {users.length > 0 ? (
+                                users.map((user) => (
+                                    <li key={user.id} className="text-gray-800 border-b last:border-b-0 pb-2">
+                                        <strong>{user.username}</strong>: {user.password}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="text-gray-500">No users found.</li>
+                            )}
+                        </ul>
+                    </div>
+                    <div className="bg-white rounded-xl shadow-md p-4">
+                        <UpdateProfile />
+                    </div>
+                </div>
+            </div>
+            <button
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={() => {
+                    import("./components/GoogleAuth");
+                }}
+            >
+                Login with google
+            </button>
+
         </div>
     );
 }
