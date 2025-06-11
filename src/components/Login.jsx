@@ -1,6 +1,9 @@
-// components/Login.js
 import { useState } from "react"
-import { signInWithEmailAndPassword, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth"
+import {
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    createUserWithEmailAndPassword
+} from "firebase/auth"
 import { getAuth, GoogleAuthProvider } from "firebase/auth"
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore"
 import { initializeApp } from "firebase/app"
@@ -30,7 +33,6 @@ const Login = ({ onLoginSuccess }) => {
     const [loading, setLoading] = useState(false)
     const [isRegister, setIsRegister] = useState(false)
 
-    // Create user document in Firestore (only username, email, password)
     const createUserDocument = async (user, additionalData = {}) => {
         const userRef = doc(db, 'users', user.uid)
         const userSnap = await getDoc(userRef)
@@ -61,7 +63,6 @@ const Login = ({ onLoginSuccess }) => {
             let userCredential;
 
             if (isRegister) {
-                // Register new user
                 if (!username) {
                     setError("Username is required for registration")
                     setLoading(false)
@@ -74,18 +75,14 @@ const Login = ({ onLoginSuccess }) => {
                 })
                 alert("Account created successfully!")
             } else {
-                // Login existing user
                 userCredential = await signInWithEmailAndPassword(auth, email, password)
-                // Ensure user document exists (for existing users)
                 await createUserDocument(userCredential.user, {
                     password
                 })
                 alert("Logged in successfully!")
             }
 
-            if (onLoginSuccess) {
-                onLoginSuccess()
-            }
+            if (onLoginSuccess) onLoginSuccess()
 
         } catch (err) {
             setError(
@@ -108,13 +105,9 @@ const Login = ({ onLoginSuccess }) => {
             const result = await signInWithPopup(auth, googleProvider)
             const user = result.user
 
-            // Create user document in Firestore
             await createUserDocument(user)
-
             alert("Google login successful!")
-            if (onLoginSuccess) {
-                onLoginSuccess()
-            }
+            if (onLoginSuccess) onLoginSuccess()
 
         } catch (err) {
             setError(err.message)
@@ -126,7 +119,7 @@ const Login = ({ onLoginSuccess }) => {
     return (
         <div className="max-w-md mx-auto">
             <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-6 text-center">
+                <h2 className="text-2xl font-bold mb-6 text-center text-black">
                     {isRegister ? "Registreren" : "Inloggen"}
                 </h2>
 
@@ -162,7 +155,7 @@ const Login = ({ onLoginSuccess }) => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required={isRegister}
-                                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                             />
                         </div>
                     )}
@@ -178,7 +171,7 @@ const Login = ({ onLoginSuccess }) => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                         />
                     </div>
 
@@ -193,7 +186,7 @@ const Login = ({ onLoginSuccess }) => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                         />
                     </div>
 
@@ -216,17 +209,21 @@ const Login = ({ onLoginSuccess }) => {
 
                 {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
 
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={() => setIsRegister(!isRegister)}
-                        className="text-blue-600 hover:underline"
-                    >
-                        {isRegister ? "Al een account? Inloggen" : "Nog geen account? Registreer hier"}
-                    </button>
+                <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-600">
+                        {isRegister ? "Heb je al een account?" : "Nog geen account?"}{" "}
+                        <button
+                            type="button"
+                            onClick={() => setIsRegister(!isRegister)}
+                            className="text-blue-600 hover:underline"
+                        >
+                            {isRegister ? "Inloggen" : "Registreren"}
+                        </button>
+                    </p>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Login
+export default Login;

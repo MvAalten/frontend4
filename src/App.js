@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getFirestore, collection, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Login from "./components/Login";
 import UpdateProfile from "./components/UpdateProfile";
+import UserCRUD from "./components/UserCRUD";
+import PostCRUD from "./components/PostCRUD";
 
 // Firebase config
 const firebaseConfig = {
@@ -17,35 +19,33 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
 
 function GymTok() {
-    const [users, setUsers] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
+    const [currentUserData, setCurrentUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
+    const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'users'
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
+            if (user) {
+                // Fetch user data from Firestore
+                try {
+                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    if (userDoc.exists()) {
+                        setCurrentUserData(userDoc.data());
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                }
+            } else {
+                setCurrentUserData(null);
+            }
             setLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
-
-    useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
-            const userList = snapshot.docs.map((doc) => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    username: data.username || "No username",
-                    email: data.email || "No email",
-                    password: data.password || "No password",
-                };
-            });
-            setUsers(userList);
         });
         return () => unsubscribe();
     }, []);
@@ -82,13 +82,13 @@ function GymTok() {
     }
 
     return (
-        <div className="h-screen overflow-y-scroll snap-y snap-mandatory bg-black text-white">
+        <div className="min-h-screen bg-black text-white">
             {/* Fixed top bar */}
-            <div className="fixed top-0 w-full z-50 bg-black bg-opacity-70 backdrop-blur-md p-4 flex justify-between items-center border-b border-gray-800">
+            <div className="fixed top-0 w-full z-50 bg-black bg-opacity-90 backdrop-blur-md p-4 flex justify-between items-center border-b border-gray-800">
                 <h1 className="text-2xl font-bold tracking-wider text-purple-400">GymTok 💪</h1>
                 {currentUser ? (
                     <div className="text-right text-sm">
-                        <p className="text-gray-300">👤 {currentUser.email}</p>
+                        <p className="text-gray-300">👤 {currentUserData?.username || currentUser.email}</p>
                         <button
                             onClick={handleSignOut}
                             className="mt-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
@@ -106,36 +106,42 @@ function GymTok() {
                 )}
             </div>
 
-            {/* Scrollable user feed */}
-            <div className="pt-20">
-                {users.length > 0 ? (
-                    users.map((user, index) => (
-                        <div
-                            key={user.id}
-                            className="snap-center h-screen flex flex-col justify-center items-center px-6 relative"
-                        >
-                            <div className="w-full max-w-md rounded-2xl shadow-xl p-6 bg-white/10 backdrop-blur-md border border-white/20 text-center">
-                                <h2 className="text-3xl font-bold text-purple-400">@{user.username}</h2>
-                                <p className="text-gray-300 mt-2">📧 {user.email}</p>
-                                <p className="text-gray-400 mt-1">
-                                    🔐 {user.password === "google_auth" ? "Google Auth" : user.password}
-                                </p>
-                                {currentUser && currentUser.uid === user.id && (
-                                    <div className="mt-3 inline-block px-3 py-1 text-xs font-semibold bg-green-600 rounded-full">
-                                        That's you!
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))
+            {/* Tab Navigation */}
+            <div className="fixed top-16 w-full z-40 bg-black bg-opacity-80 backdrop-blur-md p-2 flex justify-center border-b border-gray-800">
+                <div className="flex space-x-4">
+                    <button
+                        onClick={() => setActiveTab('posts')}
+                        className={`px-4 py-2 rounded ${
+                            activeTab === 'posts'
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                    >
+                        Posts
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('users')}
+                        className={`px-4 py-2 rounded ${
+                            activeTab === 'users'
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                    >
+                        Users
+                    </button>
+                </div>
+            </div>
+
+            {/* Main content */}
+            <div className="pt-28 px-4 pb-6 max-w-4xl mx-auto">
+                {activeTab === 'posts' ? (
+                    <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
                 ) : (
-                    <div className="h-screen flex items-center justify-center text-gray-400">
-                        No users yet.
-                    </div>
+                    <UserCRUD currentUser={currentUser} />
                 )}
             </div>
 
-            {/* Floating action buttons */}
+            {/* Floating action button */}
             {!currentUser && (
                 <div className="fixed bottom-6 right-6 z-50">
                     <button
@@ -149,7 +155,7 @@ function GymTok() {
 
             {/* Profile Update floating panel */}
             {currentUser && (
-                <div className="fixed bottom-6 left-6 z-50">
+                <div className="fixed bottom-6 left-6 z-50 bg-gray-800 p-4 rounded-lg max-w-sm">
                     <UpdateProfile />
                 </div>
             )}
