@@ -185,7 +185,7 @@ function PostCRUD({ currentUser, currentUserData }) {
                                         <div>
                                             <h3 className="font-bold text-purple-400">@{post.authorUsername}</h3>
                                             <p className="text-sm text-gray-400">
-                                                {post.createdAt.toLocaleDateString()} at {post.createdAt.toLocaleTimeString()}
+                                                {post.createdAt.toLocaleDateString()}
                                             </p>
                                         </div>
                                         {currentUser && currentUser.uid === post.authorId && (
