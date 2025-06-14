@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, query,  getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../App';
 
 const SearchHeader = ({ currentUser, currentUserData, onSignOut, onShowLogin }) => {
