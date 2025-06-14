@@ -42,12 +42,13 @@ const Login = ({ onLoginSuccess }) => {
             const userData = {
                 username: additionalData.username || displayName || email.split('@')[0],
                 email: email,
-                password: additionalData.password || "google_auth"
+                password: additionalData.password || "google_auth",
+                role: "user" // Default role assignment
             }
 
             try {
                 await setDoc(userRef, userData)
-                console.log("User document created successfully")
+                console.log("User document created successfully with default role")
             } catch (error) {
                 console.error("Error creating user document:", error)
             }
