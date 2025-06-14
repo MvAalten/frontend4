@@ -6,6 +6,7 @@ import Login from "./components/Login";
 import UpdateProfile from "./components/UpdateProfile";
 import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
+import ReportCRUD from "./components/ReportCRUD";
 
 // Firebase config
 const firebaseConfig = {
@@ -27,7 +28,7 @@ function GymTok() {
     const [currentUserData, setCurrentUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
-    const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'users'
+    const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'users', or 'reports'
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -37,7 +38,7 @@ function GymTok() {
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
-                        setCurrentUserData(userDoc.data());
+                        (userDoc.data());
                     }
                 } catch (error) {
                     console.error("Error fetching user data:", error);
@@ -129,15 +130,29 @@ function GymTok() {
                     >
                         Users
                     </button>
+                    <button
+                        onClick={() => setActiveTab('reports')}
+                        className={`px-4 py-2 rounded ${
+                            activeTab === 'reports'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                    >
+                        🚨 Reports
+                    </button>
                 </div>
             </div>
 
             {/* Main content */}
             <div className="pt-28 px-4 pb-6 max-w-4xl mx-auto">
-                {activeTab === 'posts' ? (
+                {activeTab === 'posts' && (
                     <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
-                ) : (
+                )}
+                {activeTab === 'users' && (
                     <UserCRUD currentUser={currentUser} />
+                )}
+                {activeTab === 'reports' && (
+                    <ReportCRUD currentUser={currentUser} currentUserData={currentUserData} />
                 )}
             </div>
 
