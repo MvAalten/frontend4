@@ -7,6 +7,7 @@ import UpdateProfile from "./components/UpdateProfile";
 import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
 import ReportCRUD from "./components/ReportCRUD";
+import SearchHeader from "./components/SearchHeader";
 
 // Firebase config
 const firebaseConfig = {
@@ -38,7 +39,7 @@ function GymTok() {
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
-                        (userDoc.data());
+                        setCurrentUserData(userDoc.data());
                     }
                 } catch (error) {
                     console.error("Error fetching user data:", error);
@@ -58,6 +59,10 @@ function GymTok() {
         } catch (err) {
             console.error("Logout failed:", err);
         }
+    };
+
+    const handleShowLogin = () => {
+        setShowLogin(true);
     };
 
     if (loading) {
@@ -84,31 +89,16 @@ function GymTok() {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            {/* Fixed top bar */}
-            <div className="fixed top-0 w-full z-50 bg-black bg-opacity-90 backdrop-blur-md p-4 flex justify-between items-center border-b border-gray-800">
-                <h1 className="text-2xl font-bold tracking-wider text-purple-400">GymTok 💪</h1>
-                {currentUser ? (
-                    <div className="text-right text-sm">
-                        <p className="text-gray-300">👤 {currentUserData?.username || currentUser.email}</p>
-                        <button
-                            onClick={handleSignOut}
-                            className="mt-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setShowLogin(true)}
-                        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-semibold"
-                    >
-                        Login
-                    </button>
-                )}
-            </div>
+            {/* Search Header */}
+            <SearchHeader
+                currentUser={currentUser}
+                currentUserData={currentUserData}
+                onSignOut={handleSignOut}
+                onShowLogin={handleShowLogin}
+            />
 
             {/* Tab Navigation */}
-            <div className="fixed top-16 w-full z-40 bg-black bg-opacity-80 backdrop-blur-md p-2 flex justify-center border-b border-gray-800">
+            <div className="fixed top-24 w-full z-40 bg-black bg-opacity-80 backdrop-blur-md p-2 flex justify-center border-b border-gray-800">
                 <div className="flex space-x-4">
                     <button
                         onClick={() => setActiveTab('posts')}
@@ -144,7 +134,7 @@ function GymTok() {
             </div>
 
             {/* Main content */}
-            <div className="pt-28 px-4 pb-6 max-w-4xl mx-auto">
+            <div className="pt-36 px-4 pb-6 max-w-4xl mx-auto">
                 {activeTab === 'posts' && (
                     <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
                 )}
@@ -160,7 +150,7 @@ function GymTok() {
             {!currentUser && (
                 <div className="fixed bottom-6 right-6 z-50">
                     <button
-                        onClick={() => setShowLogin(true)}
+                        onClick={handleShowLogin}
                         className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-full shadow-lg text-lg font-semibold"
                     >
                         Join GymTok
