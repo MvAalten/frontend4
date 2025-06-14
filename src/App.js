@@ -7,6 +7,7 @@ import UpdateProfile from "./components/UpdateProfile";
 import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
 import ReportCRUD from "./components/ReportCRUD";
+import RandomChallenge from "./components/RandomChallenge";
 
 // Firebase config
 const firebaseConfig = {
@@ -28,7 +29,7 @@ function GymTok() {
     const [currentUserData, setCurrentUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
-    const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'users', or 'reports'
+    const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'users', 'reports', or 'challenges'
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -38,7 +39,7 @@ function GymTok() {
                 try {
                     const userDoc = await getDoc(doc(db, 'users', user.uid));
                     if (userDoc.exists()) {
-                        (userDoc.data());
+                        setCurrentUserData(userDoc.data());
                     }
                 } catch (error) {
                     console.error("Error fetching user data:", error);
@@ -121,6 +122,16 @@ function GymTok() {
                         Posts
                     </button>
                     <button
+                        onClick={() => setActiveTab('challenges')}
+                        className={`px-4 py-2 rounded ${
+                            activeTab === 'challenges'
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
+                    >
+                        🎯 Challenges
+                    </button>
+                    <button
                         onClick={() => setActiveTab('users')}
                         className={`px-4 py-2 rounded ${
                             activeTab === 'users'
@@ -147,6 +158,9 @@ function GymTok() {
             <div className="pt-28 px-4 pb-6 max-w-4xl mx-auto">
                 {activeTab === 'posts' && (
                     <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                )}
+                {activeTab === 'challenges' && (
+                    <RandomChallenge />
                 )}
                 {activeTab === 'users' && (
                     <UserCRUD currentUser={currentUser} />
