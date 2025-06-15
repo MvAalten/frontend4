@@ -9,6 +9,8 @@ import PostCRUD from "./components/PostCRUD";
 import ReportCRUD from "./components/ReportCRUD";
 import RandomChallenge from "./components/RandomChallenge";
 import SearchHeader from "./components/SearchHeader";
+import PrivacySettings from "./components/PrivacySettings";
+import FriendsManager from "./components/FriendsManager";
 
 // Firebase config
 const firebaseConfig = {
@@ -30,7 +32,7 @@ function GymTok() {
     const [currentUserData, setCurrentUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
-    const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'users', 'reports', or 'challenges'
+    const [activeTab, setActiveTab] = useState('posts'); // 'posts', 'users', 'reports', 'challenges', 'privacy', 'friends'
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -100,10 +102,10 @@ function GymTok() {
 
             {/* Tab Navigation */}
             <div className="fixed top-24 w-full z-40 bg-black bg-opacity-80 backdrop-blur-md p-2 flex justify-center border-b border-gray-800">
-                <div className="flex space-x-4">
+                <div className="flex space-x-2 overflow-x-auto">
                     <button
                         onClick={() => setActiveTab('posts')}
-                        className={`px-4 py-2 rounded ${
+                        className={`px-4 py-2 rounded whitespace-nowrap ${
                             activeTab === 'posts'
                                 ? 'bg-purple-600 text-white'
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -113,7 +115,7 @@ function GymTok() {
                     </button>
                     <button
                         onClick={() => setActiveTab('challenges')}
-                        className={`px-4 py-2 rounded ${
+                        className={`px-4 py-2 rounded whitespace-nowrap ${
                             activeTab === 'challenges'
                                 ? 'bg-purple-600 text-white'
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -121,9 +123,33 @@ function GymTok() {
                     >
                         🎯 Challenges
                     </button>
+                    {currentUser && (
+                        <button
+                            onClick={() => setActiveTab('friends')}
+                            className={`px-4 py-2 rounded whitespace-nowrap ${
+                                activeTab === 'friends'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            👥 Friends
+                        </button>
+                    )}
+                    {currentUser && (
+                        <button
+                            onClick={() => setActiveTab('privacy')}
+                            className={`px-4 py-2 rounded whitespace-nowrap ${
+                                activeTab === 'privacy'
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            }`}
+                        >
+                            🔒 Privacy
+                        </button>
+                    )}
                     <button
                         onClick={() => setActiveTab('users')}
-                        className={`px-4 py-2 rounded ${
+                        className={`px-4 py-2 rounded whitespace-nowrap ${
                             activeTab === 'users'
                                 ? 'bg-purple-600 text-white'
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -133,7 +159,7 @@ function GymTok() {
                     </button>
                     <button
                         onClick={() => setActiveTab('reports')}
-                        className={`px-4 py-2 rounded ${
+                        className={`px-4 py-2 rounded whitespace-nowrap ${
                             activeTab === 'reports'
                                 ? 'bg-red-600 text-white'
                                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
@@ -151,6 +177,12 @@ function GymTok() {
                 )}
                 {activeTab === 'challenges' && (
                     <RandomChallenge />
+                )}
+                {activeTab === 'friends' && (
+                    <FriendsManager currentUser={currentUser} currentUserData={currentUserData} />
+                )}
+                {activeTab === 'privacy' && (
+                    <PrivacySettings currentUser={currentUser} currentUserData={currentUserData} />
                 )}
                 {activeTab === 'users' && (
                     <UserCRUD currentUser={currentUser} />
