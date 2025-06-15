@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {doc, updateDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc, query, where, or, and, serverTimestamp, getDocs} from 'firebase/firestore';
 import { db } from '../App';
+import FriendChat from './FriendChat';
 
 function FriendsManager({ currentUser, currentUserData }) {
     const [friends, setFriends] = useState([]);
@@ -13,6 +14,7 @@ function FriendsManager({ currentUser, currentUserData }) {
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'requests', 'search'
     const [blockedUsers, setBlockedUsers] = useState([]);
+    const [selectedFriend, setSelectedFriend] = useState(null); // For chat
 
     // Load blocked users to filter them out
     useEffect(() => {
@@ -283,6 +285,14 @@ function FriendsManager({ currentUser, currentUserData }) {
         return 'none';
     };
 
+    const openChat = (friend) => {
+        setSelectedFriend(friend);
+    };
+
+    const closeChat = () => {
+        setSelectedFriend(null);
+    };
+
     const filteredUsers = allUsers.filter(user => {
         const matchesSearch = user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -353,13 +363,21 @@ function FriendsManager({ currentUser, currentUserData }) {
                                                 Vrienden sinds {new Date(friend.updatedAt?.seconds * 1000).toLocaleDateString('nl-NL')}
                                             </p>
                                         </div>
-                                        <button
-                                            onClick={() => removeFriend(friend.id, friend.friendData.username)}
-                                            disabled={loading}
-                                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-                                        >
-                                            Verwijderen
-                                        </button>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => openChat(friend)}
+                                                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
+                                            >
+                                                💬 Chat
+                                            </button>
+                                            <button
+                                                onClick={() => removeFriend(friend.id, friend.friendData.username)}
+                                                disabled={loading}
+                                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+                                            >
+                                                Verwijderen
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -483,6 +501,15 @@ function FriendsManager({ currentUser, currentUserData }) {
                 <div className="mt-4 p-3 bg-gray-700 rounded text-white text-center">
                     {message}
                 </div>
+            )}
+
+            {/* Chat Modal */}
+            {selectedFriend && (
+                <FriendChat
+                    currentUser={currentUser}
+                    friend={selectedFriend}
+                    onClose={closeChat}
+                />
             )}
         </div>
     );
