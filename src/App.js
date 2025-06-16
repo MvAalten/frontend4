@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -6,6 +6,11 @@ import Login from "./components/Login";
 import UpdateProfile from "./components/UpdateProfile";
 import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
+import ReportCRUD from "./components/ReportCRUD";
+import RandomChallenge from "./components/RandomChallenge";
+import SearchHeader from "./components/SearchHeader";
+import PrivacySettings from "./components/PrivacySettings";
+import FriendsManager from "./components/FriendsManager";
 
 // Firebase config
 const firebaseConfig = {
@@ -27,15 +32,17 @@ function GymTok() {
     const [currentUserData, setCurrentUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
-    const [activeTab, setActiveTab] = useState('posts'); // 'posts' or 'users'
+    const [activeTab, setActiveTab] = useState("posts");
+    const [showUpdateProfile, setShowUpdateProfile] = useState(false);
+
+    const modalRef = useRef(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
             if (user) {
-                // Fetch user data from Firestore
                 try {
-                    const userDoc = await getDoc(doc(db, 'users', user.uid));
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
                         setCurrentUserData(userDoc.data());
                     }
@@ -50,31 +57,60 @@ function GymTok() {
         return () => unsubscribe();
     }, []);
 
+    // Close modal if clicked outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                setShowUpdateProfile(false);
+            }
+        }
+
+        if (showUpdateProfile) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showUpdateProfile]);
+
     const handleSignOut = async () => {
         try {
             await auth.signOut();
             alert("Logged out!");
+            setShowUpdateProfile(false); // close popup on logout
         } catch (err) {
             console.error("Logout failed:", err);
         }
     };
 
+    const handleShowLogin = () => {
+        setShowLogin(true);
+    };
+
     if (loading) {
         return (
-            <div className="h-screen bg-black flex items-center justify-center text-white text-2xl">
-                Loading...
+            <div className="h-screen bg-[#1E1E1E] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#FF6B6B] border-t-transparent mx-auto mb-4"></div>
+                    <div className="text-[#F5F7FA] text-2xl font-bold tracking-wide animate-pulse">
+                        Loading GymTok...
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (showLogin && !currentUser) {
         return (
-            <div className="min-h-screen bg-black text-white p-6">
+            <div className="min-h-screen bg-[#1E1E1E] text-[#F5F7FA] p-6">
                 <button
                     onClick={() => setShowLogin(false)}
-                    className="mb-4 bg-white text-black px-4 py-2 rounded"
+                    className="mb-4 bg-[#FF6B6B] text-white px-6 py-3 rounded-xl font-semibold hover:brightness-110 transform hover:scale-105 transition-all duration-200 shadow-lg"
                 >
-                    ← Back
+                    ← Back to GymTok
                 </button>
                 <Login onLoginSuccess={() => setShowLogin(false)} />
             </div>
@@ -82,82 +118,115 @@ function GymTok() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white">
-            {/* Fixed top bar */}
-            <div className="fixed top-0 w-full z-50 bg-black bg-opacity-90 backdrop-blur-md p-4 flex justify-between items-center border-b border-gray-800">
-                <h1 className="text-2xl font-bold tracking-wider text-purple-400">GymTok 💪</h1>
-                {currentUser ? (
-                    <div className="text-right text-sm">
-                        <p className="text-gray-300">👤 {currentUserData?.username || currentUser.email}</p>
-                        <button
-                            onClick={handleSignOut}
-                            className="mt-1 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        >
-                            Logout
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setShowLogin(true)}
-                        className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-semibold"
-                    >
-                        Login
-                    </button>
-                )}
+        <div className="min-h-screen bg-[#1E1E1E] text-[#F5F7FA] relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-4 -left-4 w-72 h-72 bg-[#B9CFD4]/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute top-1/3 -right-8 w-96 h-96 bg-[#FF6B6B]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-[#B9CFD4]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="fixed top-16 w-full z-40 bg-black bg-opacity-80 backdrop-blur-md p-2 flex justify-center border-b border-gray-800">
-                <div className="flex space-x-4">
-                    <button
-                        onClick={() => setActiveTab('posts')}
-                        className={`px-4 py-2 rounded ${
-                            activeTab === 'posts'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
-                    >
-                        Posts
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('users')}
-                        className={`px-4 py-2 rounded ${
-                            activeTab === 'users'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                        }`}
-                    >
-                        Users
-                    </button>
+            <SearchHeader
+                currentUser={currentUser}
+                currentUserData={currentUserData}
+                onSignOut={handleSignOut}
+                onShowLogin={handleShowLogin}
+            />
+
+            {/* Updated Navbar */}
+            <div className="fixed top-32 w-full z-40 bg-[#1E1E1E] p-2 flex justify-center border-b border-[#B9CFD4]/30">
+                {/* Container with no horizontal scroll */}
+                <div className="flex space-x-2 max-w-full max-w-6xl overflow-x-visible no-scrollbar">
+                    {[
+                        { label: "🏃‍♂️ Posts", tab: "posts" },
+                        { label: "🎯 Challenges", tab: "challenges" },
+                        { label: "👥 Friends", tab: "friends", auth: true },
+                        { label: "🔒 Privacy", tab: "privacy", auth: true },
+                        { label: "👤 Athletes", tab: "users" },
+                        { label: "🚨 Reports", tab: "reports" },
+                    ].map(({ label, tab, auth }) => {
+                        if (auth && !currentUser) return null;
+                        return (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-6 py-3 rounded-xl whitespace-nowrap font-semibold transition-all duration-300 transform hover:scale-105 ${
+                                    activeTab === tab
+                                        ? "bg-[#FF6B6B] text-white shadow-lg"
+                                        : "bg-[#40434E] text-[#F5F7FA] hover:bg-[#FF6B6B]/80 hover:text-white"
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Main content */}
-            <div className="pt-28 px-4 pb-6 max-w-4xl mx-auto">
-                {activeTab === 'posts' ? (
+            <div className="pt-32 px-4 pb-6 max-w-6xl mx-auto relative z-10">
+                {activeTab === "posts" && (
                     <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
-                ) : (
-                    <UserCRUD currentUser={currentUser} />
+                )}
+                {activeTab === "challenges" && <RandomChallenge />}
+                {activeTab === "friends" && (
+                    <FriendsManager currentUser={currentUser} currentUserData={currentUserData} />
+                )}
+                {activeTab === "privacy" && (
+                    <PrivacySettings currentUser={currentUser} currentUserData={currentUserData} />
+                )}
+                {activeTab === "users" && <UserCRUD currentUser={currentUser} />}
+                {activeTab === "reports" && (
+                    <div className="fixed inset-0 flex justify-center items-center bg-[#1E1E1E] z-20 px-4">
+                        <div className="max-w-full w-auto">
+                            <ReportCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                        </div>
+                    </div>
                 )}
             </div>
 
-            {/* Floating action button */}
             {!currentUser && (
-                <div className="fixed bottom-6 right-6 z-50">
+                <div className="fixed bottom-8 right-8 z-50">
                     <button
-                        onClick={() => setShowLogin(true)}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-full shadow-lg text-lg font-semibold"
+                        onClick={handleShowLogin}
+                        className="bg-[#FF6B6B] hover:brightness-110 text-white px-8 py-4 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300 animate-pulse"
                     >
-                        Join GymTok
+                        💪 Join GymTok
                     </button>
                 </div>
             )}
 
-            {/* Profile Update floating panel */}
+            {/* UpdateProfile toggle button */}
             {currentUser && (
-                <div className="fixed bottom-6 left-6 z-50 bg-gray-800 p-4 rounded-lg max-w-sm">
-                    <UpdateProfile />
-                </div>
+                <>
+                    <button
+                        onClick={() => setShowUpdateProfile((prev) => !prev)}
+                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-6 py-3 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300"
+                        aria-label={showUpdateProfile ? "Close Profile" : "Open Profile"}
+                    >
+                        {showUpdateProfile ? "✕ Close Profile" : "👤 Update Profile"}
+                    </button>
+
+                    {/* Modal popup */}
+                    {showUpdateProfile && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
+                            <div
+                                ref={modalRef}
+                                className="bg-[#40434E]/90 backdrop-blur-xl border border-[#B9CFD4]/30 p-6 rounded-2xl max-w-sm shadow-2xl relative"
+                            >
+                                {/* Close button inside modal */}
+                                <button
+                                    onClick={() => setShowUpdateProfile(false)}
+                                    className="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-400"
+                                    aria-label="Close profile popup"
+                                >
+                                    ×
+                                </button>
+
+                                <UpdateProfile />
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
