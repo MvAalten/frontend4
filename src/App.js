@@ -57,7 +57,6 @@ function GymTok() {
         return () => unsubscribe();
     }, []);
 
-    // Close modal if clicked outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -80,7 +79,7 @@ function GymTok() {
         try {
             await auth.signOut();
             alert("Logged out!");
-            setShowUpdateProfile(false); // close popup on logout
+            setShowUpdateProfile(false);
         } catch (err) {
             console.error("Logout failed:", err);
         }
@@ -119,7 +118,6 @@ function GymTok() {
 
     return (
         <div className="min-h-screen bg-[#1E1E1E] text-[#F5F7FA] relative overflow-hidden">
-            {/* Decorative elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-4 -left-4 w-72 h-72 bg-[#B9CFD4]/10 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute top-1/3 -right-8 w-96 h-96 bg-[#FF6B6B]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -133,17 +131,15 @@ function GymTok() {
                 onShowLogin={handleShowLogin}
             />
 
-            {/* Updated Navbar */}
             <div className="fixed top-32 w-full z-40 bg-[#1E1E1E] p-2 flex justify-center border-b border-[#B9CFD4]/30">
-                {/* Container with no horizontal scroll */}
-                <div className="flex space-x-2 max-w-full max-w-6xl overflow-x-visible no-scrollbar">
+                <div className="flex space-x-2 max-w-full overflow-x-visible no-scrollbar">
                     {[
-                        { label: "🏃‍♂️ Posts", tab: "posts" },
-                        { label: "🎯 Challenges", tab: "challenges" },
-                        { label: "👥 Friends", tab: "friends", auth: true },
-                        { label: "🔒 Privacy", tab: "privacy", auth: true },
-                        { label: "👤 Athletes", tab: "users" },
-                        { label: "🚨 Reports", tab: "reports" },
+                        { label: "Posts", tab: "posts" },
+                        { label: "Challenges", tab: "challenges" },
+                        { label: "Friends", tab: "friends", auth: true },
+                        { label: "Privacy", tab: "privacy", auth: true },
+                        { label: "Athletes", tab: "users" },
+                        { label: "Reports", tab: "reports" },
                     ].map(({ label, tab, auth }) => {
                         if (auth && !currentUser) return null;
                         return (
@@ -195,25 +191,22 @@ function GymTok() {
                 </div>
             )}
 
-            {/* UpdateProfile toggle button */}
             {currentUser && (
                 <>
                     <button
                         onClick={() => setShowUpdateProfile((prev) => !prev)}
-                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-6 py-3 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300"
+                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium transform hover:scale-105 transition-all duration-200"
                         aria-label={showUpdateProfile ? "Close Profile" : "Open Profile"}
                     >
-                        {showUpdateProfile ? "✕ Close Profile" : "👤 Update Profile"}
+                        {showUpdateProfile ? "Close" : "Update Profile"}
                     </button>
 
-                    {/* Modal popup */}
                     {showUpdateProfile && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
                             <div
                                 ref={modalRef}
                                 className="bg-[#40434E]/90 backdrop-blur-xl border border-[#B9CFD4]/30 p-6 rounded-2xl max-w-sm shadow-2xl relative"
                             >
-                                {/* Close button inside modal */}
                                 <button
                                     onClick={() => setShowUpdateProfile(false)}
                                     className="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-400"
@@ -221,7 +214,6 @@ function GymTok() {
                                 >
                                     ×
                                 </button>
-
                                 <UpdateProfile />
                             </div>
                         </div>

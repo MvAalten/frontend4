@@ -243,33 +243,6 @@ function RandomChallenge() {
                     >
                         {loading ? 'Loading...' : 'Get Random Challenge'}
                     </button>
-
-                    <button
-                        onClick={refreshChallenges}
-                        disabled={loading}
-                        title="Refresh challenges list"
-                        style={{
-                            backgroundColor: loading ? '#40434E' : '#40434E',
-                            color: '#F5F7FA',
-                            fontWeight: '600',
-                            padding: '0.75rem 1rem',
-                            borderRadius: '0.5rem',
-                            border: 'none',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            transition: 'background-color 0.3s ease',
-                            fontSize: '1.25rem',
-                            lineHeight: 1,
-                            userSelect: 'none',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!loading) e.currentTarget.style.backgroundColor = '#333a43';
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!loading) e.currentTarget.style.backgroundColor = '#40434E';
-                        }}
-                    >
-                        🔄
-                    </button>
                 </div>
 
                 {/* Stats */}
