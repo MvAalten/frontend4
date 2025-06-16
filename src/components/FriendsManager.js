@@ -1,10 +1,23 @@
-// components/FriendsManager.js
 import React, { useState, useEffect } from 'react';
-import {doc, updateDoc, getDoc, collection, addDoc, onSnapshot, deleteDoc, query, where, or, and, serverTimestamp, getDocs} from 'firebase/firestore';
+import {
+    doc,
+    updateDoc,
+    getDoc,
+    collection,
+    addDoc,
+    onSnapshot,
+    deleteDoc,
+    query,
+    where,
+    or,
+    and,
+    serverTimestamp,
+    getDocs,
+} from 'firebase/firestore';
 import { db } from '../App';
 import FriendChat from './FriendChat';
 
-function FriendsManager({ currentUser, currentUserData }) {
+function FriendsManager({ currentUser }) {
     const [friends, setFriends] = useState([]);
     const [friendRequests, setFriendRequests] = useState([]);
     const [sentRequests, setSentRequests] = useState([]);
@@ -12,32 +25,29 @@ function FriendsManager({ currentUser, currentUserData }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [activeTab, setActiveTab] = useState('friends'); // 'friends', 'requests', 'search'
+    const [activeTab, setActiveTab] = useState('friends'); // friends, requests, search
     const [blockedUsers, setBlockedUsers] = useState([]);
-    const [selectedFriend, setSelectedFriend] = useState(null); // For chat
+    const [selectedFriend, setSelectedFriend] = useState(null);
 
-    // Load blocked users to filter them out
+    // Load blocked users
     useEffect(() => {
         if (!currentUser) return;
-
-        const blockedQuery = query(
+        const blockedQ = query(
             collection(db, 'blockedUsers'),
             where('blockedBy', '==', currentUser.uid)
         );
-
-        const unsubscribe = onSnapshot(blockedQuery, (snapshot) => {
-            const blocked = snapshot.docs.map(doc => doc.data().blockedUser);
+        const unsub = onSnapshot(blockedQ, (snapshot) => {
+            const blocked = snapshot.docs.map((doc) => doc.data().blockedUser);
             setBlockedUsers(blocked);
         });
-
-        return () => unsubscribe();
+        return () => unsub();
     }, [currentUser]);
 
     // Load friends
     useEffect(() => {
         if (!currentUser) return;
 
-        const friendsQuery = query(
+        const friendsQ = query(
             collection(db, 'friendships'),
             or(
                 and(where('user1', '==', currentUser.uid), where('status', '==', 'accepted')),
@@ -45,147 +55,128 @@ function FriendsManager({ currentUser, currentUserData }) {
             )
         );
 
-        const unsubscribe = onSnapshot(friendsQuery, async (snapshot) => {
-            const friendsData = [];
-
+        const unsub = onSnapshot(friendsQ, async (snapshot) => {
+            const data = [];
             for (const docSnap of snapshot.docs) {
                 const friendship = docSnap.data();
                 const friendId = friendship.user1 === currentUser.uid ? friendship.user2 : friendship.user1;
-
                 try {
                     const friendDoc = await getDoc(doc(db, 'users', friendId));
                     if (friendDoc.exists()) {
-                        friendsData.push({
+                        data.push({
                             id: docSnap.id,
-                            friendId: friendId,
+                            friendId,
                             friendData: friendDoc.data(),
-                            ...friendship
+                            ...friendship,
                         });
                     }
-                } catch (error) {
-                    console.error('Error fetching friend data:', error);
+                } catch (e) {
+                    console.error('Error fetching friend data:', e);
                 }
             }
-
-            setFriends(friendsData);
+            setFriends(data);
         });
 
-        return () => unsubscribe();
+        return () => unsub();
     }, [currentUser]);
 
-    // Load friend requests (incoming)
+    // Load incoming friend requests
     useEffect(() => {
         if (!currentUser) return;
 
-        const requestsQuery = query(
+        const requestsQ = query(
             collection(db, 'friendships'),
-            and(
-                where('user2', '==', currentUser.uid),
-                where('status', '==', 'pending')
-            )
+            and(where('user2', '==', currentUser.uid), where('status', '==', 'pending'))
         );
 
-        const unsubscribe = onSnapshot(requestsQuery, async (snapshot) => {
-            const requestsData = [];
-
+        const unsub = onSnapshot(requestsQ, async (snapshot) => {
+            const requests = [];
             for (const docSnap of snapshot.docs) {
-                const request = docSnap.data();
-
+                const req = docSnap.data();
                 try {
-                    const requesterDoc = await getDoc(doc(db, 'users', request.user1));
+                    const requesterDoc = await getDoc(doc(db, 'users', req.user1));
                     if (requesterDoc.exists()) {
-                        requestsData.push({
+                        requests.push({
                             id: docSnap.id,
-                            requesterId: request.user1,
+                            requesterId: req.user1,
                             requesterData: requesterDoc.data(),
-                            ...request
+                            ...req,
                         });
                     }
-                } catch (error) {
-                    console.error('Error fetching requester data:', error);
+                } catch (e) {
+                    console.error('Error fetching requester data:', e);
                 }
             }
-
-            setFriendRequests(requestsData);
+            setFriendRequests(requests);
         });
 
-        return () => unsubscribe();
+        return () => unsub();
     }, [currentUser]);
 
-    // Load sent requests
+    // Load sent friend requests
     useEffect(() => {
         if (!currentUser) return;
 
-        const sentQuery = query(
+        const sentQ = query(
             collection(db, 'friendships'),
-            and(
-                where('user1', '==', currentUser.uid),
-                where('status', '==', 'pending')
-            )
+            and(where('user1', '==', currentUser.uid), where('status', '==', 'pending'))
         );
 
-        const unsubscribe = onSnapshot(sentQuery, async (snapshot) => {
-            const sentData = [];
-
+        const unsub = onSnapshot(sentQ, async (snapshot) => {
+            const sent = [];
             for (const docSnap of snapshot.docs) {
-                const request = docSnap.data();
-
+                const req = docSnap.data();
                 try {
-                    const receiverDoc = await getDoc(doc(db, 'users', request.user2));
+                    const receiverDoc = await getDoc(doc(db, 'users', req.user2));
                     if (receiverDoc.exists()) {
-                        sentData.push({
+                        sent.push({
                             id: docSnap.id,
-                            receiverId: request.user2,
+                            receiverId: req.user2,
                             receiverData: receiverDoc.data(),
-                            ...request
+                            ...req,
                         });
                     }
-                } catch (error) {
-                    console.error('Error fetching receiver data:', error);
+                } catch (e) {
+                    console.error('Error fetching receiver data:', e);
                 }
             }
-
-            setSentRequests(sentData);
+            setSentRequests(sent);
         });
 
-        return () => unsubscribe();
+        return () => unsub();
     }, [currentUser]);
 
-    // Load all users for search
+    // Load all users (exclude current user and blocked)
     useEffect(() => {
         if (!currentUser) return;
 
-        const unsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+        const unsub = onSnapshot(collection(db, 'users'), (snapshot) => {
             const users = snapshot.docs
-                .map(doc => ({ id: doc.id, ...doc.data() }))
-                .filter(user =>
-                    user.id !== currentUser.uid && // Exclude current user
-                    !blockedUsers.includes(user.id) // Exclude blocked users
-                );
+                .map((doc) => ({ id: doc.id, ...doc.data() }))
+                .filter((user) => user.id !== currentUser.uid && !blockedUsers.includes(user.id));
             setAllUsers(users);
         });
 
-        return () => unsubscribe();
+        return () => unsub();
     }, [currentUser, blockedUsers]);
 
+    // Send friend request
     const sendFriendRequest = async (targetUser) => {
         if (!currentUser) return;
-
         setLoading(true);
+        setMessage('');
         try {
-            // Check if friendship already exists
-            const existingQuery = query(
+            const existingQ = query(
                 collection(db, 'friendships'),
                 or(
                     and(where('user1', '==', currentUser.uid), where('user2', '==', targetUser.id)),
                     and(where('user1', '==', targetUser.id), where('user2', '==', currentUser.uid))
                 )
             );
-
-            const existingSnapshot = await getDocs(existingQuery);
-
-            if (!existingSnapshot.empty) {
+            const existingSnap = await getDocs(existingQ);
+            if (!existingSnap.empty) {
                 setMessage('Er bestaat al een vriendschap of verzoek met deze gebruiker');
+                setLoading(false);
                 return;
             }
 
@@ -194,107 +185,99 @@ function FriendsManager({ currentUser, currentUserData }) {
                 user2: targetUser.id,
                 status: 'pending',
                 createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp()
+                updatedAt: serverTimestamp(),
             });
 
             setMessage(`Vriendschapsverzoek verzonden naar ${targetUser.username}`);
             setSearchTerm('');
-        } catch (error) {
-            console.error('Error sending friend request:', error);
+        } catch (e) {
+            console.error('Error sending friend request:', e);
             setMessage('Fout bij het verzenden van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Accept friend request
     const acceptFriendRequest = async (requestId) => {
         setLoading(true);
+        setMessage('');
         try {
             await updateDoc(doc(db, 'friendships', requestId), {
                 status: 'accepted',
-                updatedAt: serverTimestamp()
+                updatedAt: serverTimestamp(),
             });
             setMessage('Vriendschapsverzoek geaccepteerd!');
-        } catch (error) {
-            console.error('Error accepting friend request:', error);
+        } catch (e) {
+            console.error('Error accepting friend request:', e);
             setMessage('Fout bij het accepteren van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Reject friend request
     const rejectFriendRequest = async (requestId, requesterName) => {
         setLoading(true);
+        setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
             setMessage(`Vriendschapsverzoek van ${requesterName} afgewezen`);
-        } catch (error) {
-            console.error('Error rejecting friend request:', error);
+        } catch (e) {
+            console.error('Error rejecting friend request:', e);
             setMessage('Fout bij het afwijzen van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Cancel sent friend request
     const cancelFriendRequest = async (requestId, receiverName) => {
         setLoading(true);
+        setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
             setMessage(`Vriendschapsverzoek naar ${receiverName} ingetrokken`);
-        } catch (error) {
-            console.error('Error canceling friend request:', error);
+        } catch (e) {
+            console.error('Error canceling friend request:', e);
             setMessage('Fout bij het intrekken van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Remove friend
     const removeFriend = async (friendshipId, friendName) => {
-        if (!window.confirm(`Weet je zeker dat je ${friendName} als vriend wilt verwijderen?`)) {
-            return;
-        }
-
+        if (!window.confirm(`Weet je zeker dat je ${friendName} als vriend wilt verwijderen?`)) return;
         setLoading(true);
+        setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', friendshipId));
             setMessage(`${friendName} verwijderd als vriend`);
-        } catch (error) {
-            console.error('Error removing friend:', error);
+        } catch (e) {
+            console.error('Error removing friend:', e);
             setMessage('Fout bij het verwijderen van vriend');
         } finally {
             setLoading(false);
         }
     };
 
+    // Get relationship status for search filtering
     const getRelationshipStatus = (userId) => {
-        // Check if already friends
-        if (friends.some(friend => friend.friendId === userId)) {
-            return 'friends';
-        }
-
-        // Check if request was sent
-        if (sentRequests.some(request => request.receiverId === userId)) {
-            return 'sent';
-        }
-
-        // Check if request was received
-        if (friendRequests.some(request => request.requesterId === userId)) {
-            return 'received';
-        }
-
+        if (friends.some((f) => f.friendId === userId)) return 'friends';
+        if (sentRequests.some((s) => s.receiverId === userId)) return 'sent';
+        if (friendRequests.some((r) => r.requesterId === userId)) return 'received';
         return 'none';
     };
 
-    const openChat = (friend) => {
-        setSelectedFriend(friend);
-    };
+    // Chat handlers
+    const openChat = (friend) => setSelectedFriend(friend);
+    const closeChat = () => setSelectedFriend(null);
 
-    const closeChat = () => {
-        setSelectedFriend(null);
-    };
-
-    const filteredUsers = allUsers.filter(user => {
-        const matchesSearch = user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // Filter users for search tab
+    const filteredUsers = allUsers.filter((user) => {
+        const matchesSearch =
+            user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email?.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch && getRelationshipStatus(user.id) === 'none';
     });
@@ -308,16 +291,16 @@ function FriendsManager({ currentUser, currentUserData }) {
     }
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg">
-            <h2 className="text-2xl font-bold mb-6 text-purple-400">Vrienden Beheren</h2>
+        <div className="bg-gray-800 p-6 rounded-lg max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6 text-[#FF6B6B]">Vrienden Beheren</h2>
 
-            {/* Tab Navigation */}
+            {/* Tabs */}
             <div className="flex space-x-4 mb-6">
                 <button
                     onClick={() => setActiveTab('friends')}
                     className={`px-4 py-2 rounded ${
                         activeTab === 'friends'
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-[#FF6B6B] text-white'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
@@ -327,7 +310,7 @@ function FriendsManager({ currentUser, currentUserData }) {
                     onClick={() => setActiveTab('requests')}
                     className={`px-4 py-2 rounded ${
                         activeTab === 'requests'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#FF6B6B] text-white'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
@@ -337,13 +320,17 @@ function FriendsManager({ currentUser, currentUserData }) {
                     onClick={() => setActiveTab('search')}
                     className={`px-4 py-2 rounded ${
                         activeTab === 'search'
-                            ? 'bg-green-600 text-white'
+                            ? 'bg-[#FF6B6B] text-white'
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
                     🔍 Zoeken
                 </button>
             </div>
+
+            {message && (
+                <div className="mb-4 p-2 bg-[#FF6B6B]/20 text-[#FF6B6B] rounded">{message}</div>
+            )}
 
             {/* Friends Tab */}
             {activeTab === 'friends' && (
@@ -354,19 +341,23 @@ function FriendsManager({ currentUser, currentUserData }) {
                             <p className="text-gray-400 text-center py-4">Je hebt nog geen vrienden toegevoegd</p>
                         ) : (
                             <div className="space-y-3">
-                                {friends.map(friend => (
-                                    <div key={friend.id} className="flex items-center justify-between bg-gray-600 p-3 rounded">
+                                {friends.map((friend) => (
+                                    <div
+                                        key={friend.id}
+                                        className="flex items-center justify-between bg-gray-600 p-3 rounded"
+                                    >
                                         <div>
                                             <p className="font-medium">@{friend.friendData.username}</p>
                                             <p className="text-sm text-gray-300">{friend.friendData.email}</p>
                                             <p className="text-xs text-gray-400">
-                                                Vrienden sinds {new Date(friend.updatedAt?.seconds * 1000).toLocaleDateString('nl-NL')}
+                                                Vrienden sinds{' '}
+                                                {new Date(friend.updatedAt?.seconds * 1000).toLocaleDateString('nl-NL')}
                                             </p>
                                         </div>
                                         <div className="flex space-x-2">
                                             <button
                                                 onClick={() => openChat(friend)}
-                                                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm"
+                                                className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm"
                                             >
                                                 💬 Chat
                                             </button>
@@ -383,67 +374,73 @@ function FriendsManager({ currentUser, currentUserData }) {
                             </div>
                         )}
                     </div>
-
-                    {/* Sent Requests */}
-                    {sentRequests.length > 0 && (
-                        <div className="bg-gray-700 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3 text-white">Verzonden Verzoeken</h3>
-                            <div className="space-y-3">
-                                {sentRequests.map(request => (
-                                    <div key={request.id} className="flex items-center justify-between bg-gray-600 p-3 rounded">
-                                        <div>
-                                            <p className="font-medium">@{request.receiverData.username}</p>
-                                            <p className="text-sm text-gray-300">Verzoek verzonden</p>
-                                        </div>
-                                        <button
-                                            onClick={() => cancelFriendRequest(request.id, request.receiverData.username)}
-                                            disabled={loading}
-                                            className="bg-orange-600 hover:bg-orange-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-                                        >
-                                            Intrekken
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             )}
 
-            {/* Friend Requests Tab */}
+            {/* Requests Tab */}
             {activeTab === 'requests' && (
-                <div className="space-y-4">
+                <div className="space-y-6">
+                    {/* Incoming requests */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Vriendschapsverzoeken</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Ontvangen Verzoeken</h3>
                         {friendRequests.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">Geen openstaande vriendschapsverzoeken</p>
+                            <p className="text-gray-400 text-center py-4">Geen nieuwe vriendschapsverzoeken</p>
                         ) : (
                             <div className="space-y-3">
-                                {friendRequests.map(request => (
-                                    <div key={request.id} className="flex items-center justify-between bg-gray-600 p-3 rounded">
+                                {friendRequests.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="flex items-center justify-between bg-gray-600 p-3 rounded"
+                                    >
                                         <div>
-                                            <p className="font-medium">@{request.requesterData.username}</p>
-                                            <p className="text-sm text-gray-300">{request.requesterData.email}</p>
-                                            <p className="text-xs text-gray-400">
-                                                Verzoek ontvangen op {new Date(request.createdAt?.seconds * 1000).toLocaleDateString('nl-NL')}
-                                            </p>
+                                            <p className="font-medium">@{req.requesterData.username}</p>
+                                            <p className="text-sm text-gray-300">{req.requesterData.email}</p>
                                         </div>
                                         <div className="flex space-x-2">
                                             <button
-                                                onClick={() => acceptFriendRequest(request.id)}
+                                                onClick={() => acceptFriendRequest(req.id)}
                                                 disabled={loading}
-                                                className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+                                                className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Accepteren
+                                                Accepteer
                                             </button>
                                             <button
-                                                onClick={() => rejectFriendRequest(request.id, request.requesterData.username)}
+                                                onClick={() => rejectFriendRequest(req.id, req.requesterData.username)}
                                                 disabled={loading}
                                                 className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Afwijzen
+                                                Weiger
                                             </button>
                                         </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sent requests */}
+                    <div className="bg-gray-700 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-3 text-white">Verzonden Verzoeken</h3>
+                        {sentRequests.length === 0 ? (
+                            <p className="text-gray-400 text-center py-4">Geen verzonden vriendschapsverzoeken</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {sentRequests.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="flex items-center justify-between bg-gray-600 p-3 rounded"
+                                    >
+                                        <div>
+                                            <p className="font-medium">@{req.receiverData.username}</p>
+                                            <p className="text-sm text-gray-300">{req.receiverData.email}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => cancelFriendRequest(req.id, req.receiverData.username)}
+                                            disabled={loading}
+                                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+                                        >
+                                            Intrekken
+                                        </button>
                                     </div>
                                 ))}
                             </div>
@@ -454,61 +451,49 @@ function FriendsManager({ currentUser, currentUserData }) {
 
             {/* Search Tab */}
             {activeTab === 'search' && (
-                <div className="space-y-4">
-                    <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Nieuwe Vrienden Zoeken</h3>
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Zoek gebruikers op naam of email"
+                        className="w-full p-2 rounded mb-4 bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-[#FF6B6B]"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        disabled={loading}
+                    />
+                    {filteredUsers.length === 0 ? (
+                        <p className="text-gray-400 text-center py-4">Geen gebruikers gevonden</p>
+                    ) : (
                         <div className="space-y-3">
-                            <input
-                                type="text"
-                                placeholder="Zoek gebruikers om vrienden mee te worden..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-3 bg-gray-600 text-white rounded"
-                            />
-
-                            {searchTerm && (
-                                <div className="max-h-60 overflow-y-auto space-y-2">
-                                    {filteredUsers.map(user => (
-                                        <div key={user.id} className="flex items-center justify-between bg-gray-600 p-2 rounded">
-                                            <div>
-                                                <p className="font-medium">@{user.username}</p>
-                                                <p className="text-sm text-gray-300">{user.email}</p>
-                                                {user.isPrivate && (
-                                                    <p className="text-xs text-yellow-400">🔒 Privé profiel</p>
-                                                )}
-                                            </div>
-                                            <button
-                                                onClick={() => sendFriendRequest(user)}
-                                                disabled={loading}
-                                                className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-                                            >
-                                                Vriend toevoegen
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {filteredUsers.length === 0 && (
-                                        <p className="text-gray-400 text-center py-2">Geen gebruikers gevonden</p>
-                                    )}
+                            {filteredUsers.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className="flex items-center justify-between bg-gray-600 p-3 rounded"
+                                >
+                                    <div>
+                                        <p className="font-medium">@{user.username}</p>
+                                        <p className="text-sm text-gray-300">{user.email}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => sendFriendRequest(user)}
+                                        disabled={loading}
+                                        className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm disabled:opacity-50"
+                                    >
+                                        Voeg toe
+                                    </button>
                                 </div>
-                            )}
+                            ))}
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
 
-            {/* Status Message */}
-            {message && (
-                <div className="mt-4 p-3 bg-gray-700 rounded text-white text-center">
-                    {message}
-                </div>
-            )}
-
-            {/* Chat Modal */}
+            {/* Chat window */}
             {selectedFriend && (
                 <FriendChat
                     currentUser={currentUser}
                     friend={selectedFriend}
                     onClose={closeChat}
+                    redColor="#FF6B6B"
                 />
             )}
         </div>

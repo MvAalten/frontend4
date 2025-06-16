@@ -27,7 +27,6 @@ function ReportCRUD() {
 
             setNewReport({ title: '', content: '' });
             setMessage("Report submitted successfully!");
-
         } catch (error) {
             console.error("Error creating report:", error);
             setMessage("Error submitting report. Please try again.");
@@ -37,34 +36,30 @@ function ReportCRUD() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="bg-gray-800 p-6 rounded-lg">
-                <h2 className="text-2xl font-bold mb-4 text-red-400">Submit Report</h2>
+        <div className="space-y-6 p-6 max-w-xl mx-auto">
+            <div className="bg-[#40434E] p-6 rounded-lg">
+                <h2 className="text-2xl font-bold mb-4 text-white">Submit Report</h2>
 
                 <form onSubmit={handleCreateReport} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Title
-                        </label>
+                        <label className="block text-sm font-medium text-white mb-2">Title</label>
                         <input
                             type="text"
-                            placeholder="Report title..."
+                            placeholder="Report"
                             value={newReport.title}
-                            onChange={(e) => setNewReport({...newReport, title: e.target.value})}
-                            className="w-full p-3 bg-gray-700 text-white rounded"
+                            onChange={(e) => setNewReport({ ...newReport, title: e.target.value })}
+                            className="w-full p-3 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4]"
                             disabled={loading}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Content
-                        </label>
+                        <label className="block text-sm font-medium text-white mb-2">Content</label>
                         <textarea
-                            placeholder="Report details..."
+                            placeholder="Report content"
                             value={newReport.content}
-                            onChange={(e) => setNewReport({...newReport, content: e.target.value})}
-                            className="w-full p-3 bg-gray-700 text-white rounded h-32 resize-none"
+                            onChange={(e) => setNewReport({ ...newReport, content: e.target.value })}
+                            className="w-full p-3 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4] h-32 resize-none"
                             disabled={loading}
                         />
                     </div>
@@ -72,14 +67,14 @@ function ReportCRUD() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="bg-red-600 hover:bg-red-700 disabled:bg-gray-600 px-6 py-2 rounded font-semibold"
+                        className="bg-[#FF6B6B] hover:bg-[#E55A5A] disabled:bg-[#40434E] px-6 py-2 rounded font-semibold text-white"
                     >
                         {loading ? "Submitting..." : "Submit Report"}
                     </button>
                 </form>
 
                 {message && (
-                    <div className="mt-4 p-3 bg-gray-700 rounded text-white">
+                    <div className="mt-4 p-3 bg-[#B9CFD4] rounded text-black">
                         {message}
                     </div>
                 )}

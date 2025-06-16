@@ -1,17 +1,14 @@
-// utils/friendshipUtils.js
 import { collection, query, where, getDocs, or, and } from 'firebase/firestore';
 import { db } from '../App';
 
 /**
- * Check if two users are friends
- * @param {string} user1Id - First user's ID
- * @param {string} user2Id - Second user's ID
- * @returns {Promise<boolean>} - True if users are friends, false otherwise
+ * Check if two users are friends (status 'accepted')
+ * @param {string} user1Id
+ * @param {string} user2Id
+ * @returns {Promise<boolean>}
  */
 export const areFriends = async (user1Id, user2Id) => {
-    if (!user1Id || !user2Id || user1Id === user2Id) {
-        return false;
-    }
+    if (!user1Id || !user2Id || user1Id === user2Id) return false;
 
     try {
         const friendshipQuery = query(
@@ -35,14 +32,12 @@ export const areFriends = async (user1Id, user2Id) => {
 
 /**
  * Check if a user is blocked by another user
- * @param {string} blockedUserId - ID of potentially blocked user
- * @param {string} blockerUserId - ID of user who might have blocked
- * @returns {Promise<boolean>} - True if user is blocked, false otherwise
+ * @param {string} blockedUserId
+ * @param {string} blockerUserId
+ * @returns {Promise<boolean>}
  */
 export const isUserBlocked = async (blockedUserId, blockerUserId) => {
-    if (!blockedUserId || !blockerUserId) {
-        return false;
-    }
+    if (!blockedUserId || !blockerUserId) return false;
 
     try {
         const blockQuery = query(
@@ -62,55 +57,37 @@ export const isUserBlocked = async (blockedUserId, blockerUserId) => {
 };
 
 /**
- * Check if current user can view another user's content
- * @param {Object} contentOwner - The user who owns the content
- * @param {string} currentUserId - Current user's ID
- * @returns {Promise<boolean>} - True if content can be viewed, false otherwise
+ * Determine if current user can view another user's content based on privacy & block
+ * @param {Object} contentOwner - user object with { id, isPrivate }
+ * @param {string} currentUserId
+ * @returns {Promise<boolean>}
  */
 export const canViewUserContent = async (contentOwner, currentUserId) => {
-    // If no current user, can only view public content
-    if (!currentUserId) {
-        return !contentOwner.isPrivate;
-    }
+    if (!currentUserId) return !contentOwner.isPrivate;
 
-    // User can always view their own content
-    if (contentOwner.id === currentUserId) {
-        return true;
-    }
+    if (contentOwner.id === currentUserId) return true;
 
-    // Check if current user is blocked
     const isBlocked = await isUserBlocked(currentUserId, contentOwner.id);
-    if (isBlocked) {
-        return false;
-    }
+    if (isBlocked) return false;
 
-    // If profile is not private, anyone can view
-    if (!contentOwner.isPrivate) {
-        return true;
-    }
+    if (!contentOwner.isPrivate) return true;
 
-    // If profile is private, only friends can view
     return await areFriends(contentOwner.id, currentUserId);
 };
 
 /**
  * Get all friend IDs for a user
- * @param {string} userId - User's ID
- * @returns {Promise<string[]>} - Array of friend IDs
+ * @param {string} userId
+ * @returns {Promise<string[]>}
  */
 export const getUserFriends = async (userId) => {
-    if (!userId) {
-        return [];
-    }
+    if (!userId) return [];
 
     try {
         const friendsQuery = query(
             collection(db, 'friendships'),
             and(
-                or(
-                    where('user1', '==', userId),
-                    where('user2', '==', userId)
-                ),
+                or(where('user1', '==', userId), where('user2', '==', userId)),
                 where('status', '==', 'accepted')
             )
         );
@@ -133,14 +110,17 @@ export const getUserFriends = async (userId) => {
 
 /**
  * Get friendship status between two users
- * @param {string} user1Id - First user's ID
- * @param {string} user2Id - Second user's ID
- * @returns {Promise<string>} - 'friends', 'pending_sent', 'pending_received', or 'none'
+ * Possible return values:
+ * - 'friends' (accepted)
+ * - 'pending_sent' (user1 sent a request to user2)
+ * - 'pending_received' (user1 received a request from user2)
+ * - 'none' (no friendship or request)
+ * @param {string} user1Id
+ * @param {string} user2Id
+ * @returns {Promise<string>}
  */
 export const getFriendshipStatus = async (user1Id, user2Id) => {
-    if (!user1Id || !user2Id || user1Id === user2Id) {
-        return 'none';
-    }
+    if (!user1Id || !user2Id || user1Id === user2Id) return 'none';
 
     try {
         const friendshipQuery = query(
@@ -152,24 +132,14 @@ export const getFriendshipStatus = async (user1Id, user2Id) => {
         );
 
         const snapshot = await getDocs(friendshipQuery);
-
-        if (snapshot.empty) {
-            return 'none';
-        }
+        if (snapshot.empty) return 'none';
 
         const friendship = snapshot.docs[0].data();
 
-        if (friendship.status === 'accepted') {
-            return 'friends';
-        }
+        if (friendship.status === 'accepted') return 'friends';
 
         if (friendship.status === 'pending') {
-            // Check who sent the request
-            if (friendship.user1 === user1Id) {
-                return 'pending_sent';
-            } else {
-                return 'pending_received';
-            }
+            return friendship.user1 === user1Id ? 'pending_sent' : 'pending_received';
         }
 
         return 'none';
@@ -180,45 +150,33 @@ export const getFriendshipStatus = async (user1Id, user2Id) => {
 };
 
 /**
- * Filter posts based on privacy settings and friendships
- * @param {Array} posts - Array of posts to filter
- * @param {string} currentUserId - Current user's ID
+ * Filter posts by privacy settings and friendships
+ * @param {Array} posts - Array of posts with at least userId and userIsPrivate properties
+ * @param {string} currentUserId
  * @returns {Promise<Array>} - Filtered posts array
  */
 export const filterPostsByPrivacy = async (posts, currentUserId) => {
-    if (!posts || posts.length === 0) {
-        return [];
-    }
+    if (!posts || posts.length === 0) return [];
 
     const filteredPosts = [];
 
     for (const post of posts) {
-        // Always show current user's posts
         if (post.userId === currentUserId) {
             filteredPosts.push(post);
             continue;
         }
 
-        // Check if current user is blocked
         if (currentUserId) {
             const isBlocked = await isUserBlocked(currentUserId, post.userId);
-            if (isBlocked) {
-                continue; // Skip blocked user's posts
-            }
+            if (isBlocked) continue; // skip blocked users' posts
         }
 
-        // Check if post owner has private profile
         if (post.userIsPrivate) {
-            if (!currentUserId) {
-                continue; // Skip private posts if not logged in
-            }
+            if (!currentUserId) continue; // skip private posts for guests
 
-            const areFriendsResult = await areFriends(post.userId, currentUserId);
-            if (areFriendsResult) {
-                filteredPosts.push(post);
-            }
+            const friends = await areFriends(post.userId, currentUserId);
+            if (friends) filteredPosts.push(post);
         } else {
-            // Public post, add it
             filteredPosts.push(post);
         }
     }

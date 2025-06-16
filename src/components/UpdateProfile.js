@@ -1,11 +1,10 @@
-// components/UpdateProfile.js
 import React, { useState, useEffect } from 'react';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
-// Firebase config
+// Firebase config (unchanged)
 const firebaseConfig = {
     apiKey: "AIzaSyDIab5pd5vj0hSCa1AisTB1Cy1t2t-Ngbk",
     authDomain: "l2p4frontend.firebaseapp.com",
@@ -16,7 +15,6 @@ const firebaseConfig = {
     measurementId: "G-MH08GCCV0P"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -35,7 +33,6 @@ function UpdateProfile() {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setCurrentUser(user);
-                // Fetch current user data from Firestore
                 try {
                     const userRef = doc(db, 'users', user.uid);
                     const userSnap = await getDoc(userRef);
@@ -73,7 +70,6 @@ function UpdateProfile() {
             const userRef = doc(db, 'users', currentUser.uid);
             const updateData = {};
 
-            // Only update fields that have changed
             if (username && username !== currentUserData?.username) {
                 updateData.username = username;
             }
@@ -92,9 +88,8 @@ function UpdateProfile() {
 
             await updateDoc(userRef, updateData);
             setMessage('Profile updated successfully!');
-            setPassword(''); // Clear password field after update
+            setPassword('');
 
-            // Refresh current user data
             const updatedUserSnap = await getDoc(userRef);
             if (updatedUserSnap.exists()) {
                 setCurrentUserData(updatedUserSnap.data());
@@ -109,29 +104,29 @@ function UpdateProfile() {
 
     if (!currentUser) {
         return (
-            <div className="text-center p-8">
-                <h2 className="text-xl font-bold mb-4">Update Profile</h2>
-                <p className="text-gray-600">Please log in to update your profile</p>
+            <div className="text-center p-8 rounded-lg bg-[#40434E] text-white">
+                <h2 className="text-xl font-bold mb-4 text-[#B9CFD4]">Update Profile</h2>
+                <p className="text-[#B9CFD4]">Please log in to update your profile</p>
             </div>
         );
     }
 
     return (
-        <div>
-            <h2 className="text-xl font-bold mb-4">Update Profile</h2>
+        <div className="bg-[#40434E] p-6 rounded-lg text-white max-w-md mx-auto">
+            <h2 className="text-xl font-bold mb-4 text-[#B9CFD4]">Update Profile</h2>
 
             {currentUserData && (
-                <div className="mb-4 p-3 bg-gray-50 rounded">
-                    <h3 className="font-semibold text-sm text-gray-700 mb-2">Current Info</h3>
-                    <p className="text-sm"><strong>Username:</strong> {currentUserData.username}</p>
-                    <p className="text-sm"><strong>Email:</strong> {currentUserData.email}</p>
-                    <p className="text-sm"><strong>Password:</strong> {currentUserData.password === 'google_auth' ? 'Google Auth' : '••••••••'}</p>
+                <div className="mb-6 p-4 bg-[#1E1E1E] rounded">
+                    <h3 className="font-semibold text-sm text-[#B9CFD4] mb-2">Current Info</h3>
+                    <p className="text-sm text-white"><strong>Username:</strong> {currentUserData.username}</p>
+                    <p className="text-sm text-white"><strong>Email:</strong> {currentUserData.email}</p>
+                    <p className="text-sm text-white"><strong>Password:</strong> {currentUserData.password === 'google_auth' ? 'Google Auth' : '••••••••'}</p>
                 </div>
             )}
 
-            <form onSubmit={handleUpdate} className="space-y-4">
+            <form onSubmit={handleUpdate} className="space-y-5">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#B9CFD4] mb-1">
                         Username
                     </label>
                     <input
@@ -139,12 +134,12 @@ function UpdateProfile() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="New Username"
-                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-2 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4] focus:outline-none focus:ring-2 focus:ring-[#B9CFD4]"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#B9CFD4] mb-1">
                         Email
                     </label>
                     <input
@@ -152,12 +147,12 @@ function UpdateProfile() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="New Email"
-                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-2 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4] focus:outline-none focus:ring-2 focus:ring-[#B9CFD4]"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#B9CFD4] mb-1">
                         Password
                     </label>
                     <input
@@ -165,9 +160,9 @@ function UpdateProfile() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="New Password"
-                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-2 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4] focus:outline-none focus:ring-2 focus:ring-[#B9CFD4]"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[#B9CFD4] mt-1">
                         Leave blank to keep current password
                     </p>
                 </div>
@@ -175,17 +170,17 @@ function UpdateProfile() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="w-full bg-[#FF6B6B] hover:bg-[#E55A5A] disabled:bg-[#40434E] text-white py-2 rounded font-semibold transition"
                 >
                     {loading ? "Updating..." : "Update Profile"}
                 </button>
             </form>
 
             {message && (
-                <p className="text-green-500 text-sm mt-4 text-center">{message}</p>
+                <p className="text-[#B9CFD4] text-sm mt-4 text-center">{message}</p>
             )}
             {error && (
-                <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+                <p className="text-[#FF6B6B] text-sm mt-4 text-center">{error}</p>
             )}
         </div>
     );

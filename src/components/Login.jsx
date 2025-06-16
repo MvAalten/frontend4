@@ -1,14 +1,15 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
     signInWithEmailAndPassword,
     signInWithPopup,
-    createUserWithEmailAndPassword
-} from "firebase/auth"
-import { getAuth, GoogleAuthProvider } from "firebase/auth"
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore"
-import { initializeApp } from "firebase/app"
+    createUserWithEmailAndPassword,
+    getAuth,
+    GoogleAuthProvider,
+} from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
 
-// Firebase config (you can move this to a separate file later)
+// Firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyDIab5pd5vj0hSCa1AisTB1Cy1t2t-Ngbk",
     authDomain: "l2p4frontend.firebaseapp.com",
@@ -16,7 +17,7 @@ const firebaseConfig = {
     storageBucket: "l2p4frontend.appspot.com",
     messagingSenderId: "439165311953",
     appId: "1:439165311953:web:3d5465838296978009def0",
-    measurementId: "G-MH08GCCV0P"
+    measurementId: "G-MH08GCCV0P",
 };
 
 // Initialize Firebase
@@ -26,96 +27,88 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 const Login = ({ onLoginSuccess }) => {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [username, setUsername] = useState("")
-    const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
-    const [isRegister, setIsRegister] = useState(false)
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [isRegister, setIsRegister] = useState(false);
 
     const createUserDocument = async (user, additionalData = {}) => {
-        const userRef = doc(db, 'users', user.uid)
-        const userSnap = await getDoc(userRef)
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
-            const { displayName, email } = user
+            const { displayName, email: userEmail } = user;
             const userData = {
-                username: additionalData.username || displayName || email.split('@')[0],
-                email: email,
+                username: additionalData.username || displayName || userEmail.split("@")[0],
+                email: userEmail,
                 password: additionalData.password || "google_auth",
-                role: "user" // Default role assignment
-            }
+                role: "user", // Default role
+            };
 
             try {
-                await setDoc(userRef, userData)
-                console.log("User document created successfully with default role")
+                await setDoc(userRef, userData);
+                console.log("User document created successfully with default role");
             } catch (error) {
-                console.error("Error creating user document:", error)
+                console.error("Error creating user document:", error);
             }
         }
-    }
+    };
 
     const handleEmailAuth = async (e) => {
-        e.preventDefault()
-        setError("")
-        setLoading(true)
+        e.preventDefault();
+        setError("");
+        setLoading(true);
 
         try {
             let userCredential;
 
             if (isRegister) {
                 if (!username) {
-                    setError("Username is required for registration")
-                    setLoading(false)
-                    return
+                    setError("Username is required for registration");
+                    setLoading(false);
+                    return;
                 }
-                userCredential = await createUserWithEmailAndPassword(auth, email, password)
-                await createUserDocument(userCredential.user, {
-                    username,
-                    password
-                })
-                alert("Account created successfully!")
+                userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await createUserDocument(userCredential.user, { username, password });
+                alert("Account created successfully!");
             } else {
-                userCredential = await signInWithEmailAndPassword(auth, email, password)
-                await createUserDocument(userCredential.user, {
-                    password
-                })
-                alert("Logged in successfully!")
+                userCredential = await signInWithEmailAndPassword(auth, email, password);
+                await createUserDocument(userCredential.user, { password });
+                alert("Logged in successfully!");
             }
 
-            if (onLoginSuccess) onLoginSuccess()
-
+            if (onLoginSuccess) onLoginSuccess();
         } catch (err) {
             setError(
                 err.code === "auth/invalid-credential"
                     ? "Ongeldige inloggegevens. Controleer je e-mail en wachtwoord."
                     : err.code === "auth/email-already-in-use"
                         ? "Dit e-mailadres is al in gebruik."
-                        : err.message,
-            )
+                        : err.message
+            );
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleGoogleSignIn = async () => {
-        setError("")
-        setLoading(true)
+        setError("");
+        setLoading(true);
 
         try {
-            const result = await signInWithPopup(auth, googleProvider)
-            const user = result.user
-
-            await createUserDocument(user)
-            alert("Google login successful!")
-            if (onLoginSuccess) onLoginSuccess()
-
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            await createUserDocument(user);
+            alert("Google login successful!");
+            if (onLoginSuccess) onLoginSuccess();
         } catch (err) {
-            setError(err.message)
+            setError(err.message);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="max-w-md mx-auto">
@@ -146,7 +139,10 @@ const Login = ({ onLoginSuccess }) => {
                 <form onSubmit={handleEmailAuth} className="space-y-4">
                     {isRegister && (
                         <div>
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label
+                                htmlFor="username"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
                                 Gebruikersnaam
                             </label>
                             <input
@@ -162,7 +158,10 @@ const Login = ({ onLoginSuccess }) => {
                     )}
 
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             E-mail
                         </label>
                         <input
@@ -177,7 +176,10 @@ const Login = ({ onLoginSuccess }) => {
                     </div>
 
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Wachtwoord
                         </label>
                         <input
@@ -193,7 +195,10 @@ const Login = ({ onLoginSuccess }) => {
 
                     {!isRegister && (
                         <div className="text-right">
-                            <button type="button" className="text-blue-600 hover:underline text-sm">
+                            <button
+                                type="button"
+                                className="text-blue-600 hover:underline text-sm"
+                            >
                                 Wachtwoord vergeten?
                             </button>
                         </div>
@@ -204,11 +209,13 @@ const Login = ({ onLoginSuccess }) => {
                         disabled={loading}
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Bezig..." : (isRegister ? "Registreren" : "Inloggen")}
+                        {loading ? "Bezig..." : isRegister ? "Registreren" : "Inloggen"}
                     </button>
                 </form>
 
-                {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
+                {error && (
+                    <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+                )}
 
                 <div className="mt-4 text-center">
                     <p className="text-sm text-gray-600">

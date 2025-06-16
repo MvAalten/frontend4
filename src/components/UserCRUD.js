@@ -7,55 +7,30 @@ function UserCRUD({ currentUser }) {
     const [editingUser, setEditingUser] = useState(null);
     const [editForm, setEditForm] = useState({ username: '', email: '', role: 'user' });
 
-    // Define available roles
     const ROLES = {
         ADMIN: 'admin',
         USER: 'user'
     };
 
-    // Get current user's role
     const getCurrentUserRole = () => {
         if (!currentUser) return null;
         const currentUserData = users.find(user => user.id === currentUser.uid);
-        return currentUserData?.role || 'user';
+        return currentUserData?.role || ROLES.USER;
     };
 
-    // Check if current user can perform admin actions
-    const canManageUsers = () => {
-        const currentRole = getCurrentUserRole();
-        return currentRole === ROLES.ADMIN;
-    };
+    const canManageUsers = () => getCurrentUserRole() === ROLES.ADMIN;
 
-    // Check if current user can edit a specific user
     const canEditUser = (targetUser) => {
-        if (!currentUser) return false;
-
         const currentRole = getCurrentUserRole();
-
-        // Admins can edit anyone
-        if (currentRole === ROLES.ADMIN) return true;
-
-        // Users can only edit themselves
-        return currentUser.uid === targetUser.id;
+        return currentRole === ROLES.ADMIN || currentUser?.uid === targetUser.id;
     };
 
-    // Check if current user can delete a specific user
     const canDeleteUser = (targetUser) => {
-        if (!currentUser) return false;
-
         const currentRole = getCurrentUserRole();
-
-        // Only admins can delete users
-        if (currentRole !== ROLES.ADMIN) return false;
-
-        // Admins cannot delete themselves
-        return currentUser.uid !== targetUser.id;
+        return currentRole === ROLES.ADMIN && currentUser?.uid !== targetUser.id;
     };
 
-    // Check if current user can change roles
-    const canChangeRole = () => {
-        return getCurrentUserRole() === ROLES.ADMIN;
-    };
+    const canChangeRole = () => getCurrentUserRole() === ROLES.ADMIN;
 
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
@@ -65,20 +40,17 @@ function UserCRUD({ currentUser }) {
             }));
             setUsers(userList);
         });
+
         return () => unsubscribe();
     }, []);
 
     const handleEditUser = (user) => {
-        if (!canEditUser(user)) {
-            alert("You don't have permission to edit this user.");
-            return;
-        }
-
+        if (!canEditUser(user)) return alert("You don't have permission to edit this user.");
         setEditingUser(user.id);
         setEditForm({
             username: user.username,
             email: user.email,
-            role: user.role || 'user'
+            role: user.role || ROLES.USER
         });
     };
 
@@ -86,112 +58,103 @@ function UserCRUD({ currentUser }) {
         try {
             const updateData = {
                 username: editForm.username,
-                email: editForm.email
+                email: editForm.email,
             };
-
-            // Only include role if user can change roles
-            if (canChangeRole()) {
-                updateData.role = editForm.role;
-            }
+            if (canChangeRole()) updateData.role = editForm.role;
 
             await updateDoc(doc(db, "users", userId), updateData);
             setEditingUser(null);
             alert("User updated successfully!");
         } catch (error) {
             console.error("Error updating user:", error);
-            alert("Error updating user");
+            alert("Error updating user.");
         }
     };
 
     const handleDeleteUser = async (userId) => {
         const userToDelete = users.find(user => user.id === userId);
-
-        if (!canDeleteUser(userToDelete)) {
-            alert("You don't have permission to delete this user.");
-            return;
-        }
-
+        if (!canDeleteUser(userToDelete)) return alert("You don't have permission to delete this user.");
         if (window.confirm("Are you sure you want to delete this user?")) {
             try {
                 await deleteDoc(doc(db, "users", userId));
                 alert("User deleted successfully!");
             } catch (error) {
                 console.error("Error deleting user:", error);
-                alert("Error deleting user");
+                alert("Error deleting user.");
             }
         }
     };
 
     const getRoleColor = (role) => {
         switch (role) {
-            case ROLES.ADMIN:
-                return 'bg-red-600';
-            default:
-                return 'bg-gray-600';
+            case ROLES.ADMIN: return 'bg-[#FF6B6B] text-white';
+            default: return 'bg-[#40434E] text-[#F5F7FA]';
         }
     };
 
-    const getRoleLabel = (role) => {
-        return role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
-    };
+    const getRoleLabel = (role) =>
+        role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
 
     return (
-        <div className="bg-gray-800 p-4 rounded-lg mb-6">
-            <h2 className="text-xl font-bold mb-4 text-purple-400">User Management</h2>
+        <div className="bg-[#1E1E1E] p-4 rounded-xl border border-[#B9CFD4]/20 shadow-lg">
+            <h2 className="text-xl font-bold mb-4 text-[#F5F7FA]">User Management</h2>
 
-            {/* Display current user's permissions */}
-            <div className="mb-4 p-3 bg-gray-700 rounded">
-                <p className="text-sm text-gray-300">
-                    Your role: <span className={`px-2 py-1 rounded text-xs ${getRoleColor(getCurrentUserRole())}`}>
-                        {getRoleLabel(getCurrentUserRole())}
-                    </span>
+            <div className="mb-4 p-4 bg-[#40434E] rounded-lg border border-[#B9CFD4]/20">
+                <p className="text-sm text-[#F5F7FA]">
+                    Your role:
+                    <span className={`ml-2 px-2 py-1 rounded text-xs ${getRoleColor(getCurrentUserRole())}`}>
+            {getRoleLabel(getCurrentUserRole())}
+          </span>
                 </p>
                 {!canManageUsers() && (
-                    <p className="text-xs text-yellow-400 mt-1">
-                        You can only edit your own profile. Contact an admin for role changes.
+                    <p className="text-xs text-yellow-400 mt-2">
+                        You can only edit your own profile. Contact an admin for further changes.
                     </p>
                 )}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
                 {users.map((user) => (
-                    <div key={user.id} className="bg-gray-700 p-3 rounded flex justify-between items-center">
+                    <div
+                        key={user.id}
+                        className="bg-[#40434E] p-4 rounded-lg flex justify-between items-start border border-[#B9CFD4]/10"
+                    >
                         {editingUser === user.id ? (
-                            <div className="flex-1 space-y-2">
+                            <div className="flex-1 space-y-3">
                                 <input
                                     type="text"
                                     value={editForm.username}
-                                    onChange={(e) => setEditForm({...editForm, username: e.target.value})}
-                                    className="w-full p-2 bg-gray-600 text-white rounded"
+                                    onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                                    className="w-full p-2 rounded bg-[#1E1E1E] text-[#F5F7FA] border border-[#B9CFD4]/30"
                                     placeholder="Username"
                                 />
                                 <input
                                     type="email"
                                     value={editForm.email}
-                                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                                    className="w-full p-2 bg-gray-600 text-white rounded"
+                                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                    className="w-full p-2 rounded bg-[#1E1E1E] text-[#F5F7FA] border border-[#B9CFD4]/30"
                                     placeholder="Email"
                                 />
                                 {canChangeRole() && (
                                     <select
                                         value={editForm.role}
-                                        onChange={(e) => setEditForm({...editForm, role: e.target.value})}
-                                        className="w-full p-2 bg-gray-600 text-white rounded"
+                                        onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                                        className="w-full p-2 rounded bg-[#1E1E1E] text-[#F5F7FA] border border-[#B9CFD4]/30"
                                     >
-                                        <option value={ROLES.USER}>user</option>
-                                        <option value={ROLES.ADMIN}>admin</option>
+                                        <option value={ROLES.USER}>User</option>
+                                        <option value={ROLES.ADMIN}>Admin</option>
                                     </select>
                                 )}
                                 <div className="flex space-x-2">
                                     <button
                                         onClick={() => handleUpdateUser(user.id)}
-                                        className="bg-green-600 px-3 py-1 rounded text-sm hover:bg-green-700"
+                                        className="bg-[#FF6B6B] hover:brightness-110 text-white px-3 py-1 rounded text-sm shadow"
                                     >
                                         Save
                                     </button>
                                     <button
                                         onClick={() => setEditingUser(null)}
-                                        className="bg-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700"
+                                        className="bg-[#1E1E1E] hover:bg-[#2A2A2A] text-[#F5F7FA] px-3 py-1 rounded text-sm border border-[#B9CFD4]/20"
                                     >
                                         Cancel
                                     </button>
@@ -200,22 +163,22 @@ function UserCRUD({ currentUser }) {
                         ) : (
                             <>
                                 <div>
-                                    <div className="flex items-center space-x-2 mb-1">
-                                        <p className="font-semibold">@{user.username}</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="font-semibold text-[#F5F7FA]">@{user.username}</p>
                                         <span className={`text-xs px-2 py-1 rounded ${getRoleColor(user.role)}`}>
-                                            {getRoleLabel(user.role)}
-                                        </span>
-                                        {currentUser && currentUser.uid === user.id && (
-                                            <span className="text-xs bg-green-600 px-2 py-1 rounded">You</span>
+                      {getRoleLabel(user.role)}
+                    </span>
+                                        {currentUser?.uid === user.id && (
+                                            <span className="text-xs bg-green-600 px-2 py-1 rounded text-white">You</span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-300">{user.email}</p>
+                                    <p className="text-sm text-[#B9CFD4]">{user.email}</p>
                                 </div>
-                                <div className="flex space-x-2">
+                                <div className="flex flex-col gap-2">
                                     {canEditUser(user) && (
                                         <button
                                             onClick={() => handleEditUser(user)}
-                                            className="bg-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-700"
+                                            className="bg-[#B9CFD4] text-[#1E1E1E] px-3 py-1 rounded text-sm hover:brightness-110"
                                         >
                                             Edit
                                         </button>
@@ -223,13 +186,13 @@ function UserCRUD({ currentUser }) {
                                     {canDeleteUser(user) && (
                                         <button
                                             onClick={() => handleDeleteUser(user.id)}
-                                            className="bg-red-600 px-3 py-1 rounded text-sm hover:bg-red-700"
+                                            className="bg-[#FF6B6B] text-white px-3 py-1 rounded text-sm hover:brightness-110"
                                         >
                                             Delete
                                         </button>
                                     )}
                                     {!canEditUser(user) && !canDeleteUser(user) && currentUser?.uid !== user.id && (
-                                        <span className="text-xs text-gray-500 px-3 py-1">No actions available</span>
+                                        <span className="text-xs text-gray-400 px-3 py-1">No actions available</span>
                                     )}
                                 </div>
                             </>
