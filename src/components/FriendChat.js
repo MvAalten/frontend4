@@ -1,4 +1,3 @@
-// Simple Message Display Component
 import React, { useState, useEffect } from 'react';
 import {
     collection,
