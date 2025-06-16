@@ -83,7 +83,7 @@ const SearchHeader = ({ currentUser, currentUserData, onSignOut, onShowLogin }) 
                     <h1 className="text-2xl font-bold tracking-wider text-[#FF6B6B]">GymTok</h1>
                     {currentUser ? (
                         <div className="text-right text-sm">
-                            <p className="text-[#B9CFD4]">👤 {currentUserData?.username || currentUser.email}</p>
+                            <p className="text-[#B9CFD4]">{currentUserData?.username || currentUser.email}</p>
                             <button
                                 onClick={onSignOut}
                                 className="mt-1 bg-[#40434E] text-white px-3 py-1 rounded hover:bg-[#333B44]"
