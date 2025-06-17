@@ -186,7 +186,7 @@ function GymTok() {
                         onClick={handleShowLogin}
                         className="bg-[#FF6B6B] hover:brightness-110 text-white px-8 py-4 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300 animate-pulse"
                     >
-                        💪 Join GymTok
+                        Join GymTok
                     </button>
                 </div>
             )}
@@ -195,7 +195,8 @@ function GymTok() {
                 <>
                     <button
                         onClick={() => setShowUpdateProfile((prev) => !prev)}
-                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium transform hover:scale-105 transition-all duration-200"
+                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-6 py-3 rounded-full shadow-md text-base font-semibold transform hover:scale-105 transition-all duration-200
+"
                         aria-label={showUpdateProfile ? "Close Profile" : "Open Profile"}
                     >
                         {showUpdateProfile ? "Close" : "Update Profile"}

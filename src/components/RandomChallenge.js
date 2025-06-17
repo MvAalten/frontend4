@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs} from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../App';
 
 function RandomChallenge() {
@@ -73,7 +73,6 @@ function RandomChallenge() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: '#1E1E1E', // Charcoal Black page background
                     padding: '1rem'
                 }}
             >
@@ -82,10 +81,10 @@ function RandomChallenge() {
                         maxWidth: '28rem',
                         width: '100%',
                         padding: '1.5rem',
-                        backgroundColor: '#40434E', // Dark Slate
-                        border: '1px solid #B9CFD4', // Sky Mist border
+                        backgroundColor: '#40434E',
+                        border: '1px solid #B9CFD4',
                         borderRadius: '0.5rem',
-                        color: '#F5F7FA' // Arctic White text
+                        color: '#F5F7FA'
                     }}
                 >
                     <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#FF6B6B' }}>
@@ -95,7 +94,7 @@ function RandomChallenge() {
                     <button
                         onClick={refreshChallenges}
                         style={{
-                            backgroundColor: '#FF6B6B', // Coral Energy
+                            backgroundColor: '#FF6B6B',
                             color: '#F5F7FA',
                             padding: '0.5rem 1rem',
                             borderRadius: '0.375rem',
@@ -126,7 +125,6 @@ function RandomChallenge() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#1E1E1E', // Charcoal Black page background
                 padding: '1rem',
             }}
         >
@@ -135,10 +133,10 @@ function RandomChallenge() {
                     maxWidth: '32rem',
                     width: '100%',
                     padding: '1.5rem',
-                    backgroundColor: '#1E1E1E', // Charcoal Black container background
-                    border: '1px solid #B9CFD4', // Sky Mist border
+                    backgroundColor: '#1E1E1E',
+                    border: '1px solid #B9CFD4',
                     borderRadius: '0.5rem',
-                    color: '#F5F7FA', // Arctic White text
+                    color: '#F5F7FA',
                     fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
                     boxSizing: 'border-box',
                     display: 'flex',
@@ -152,20 +150,19 @@ function RandomChallenge() {
                         fontWeight: '700',
                         margin: 0,
                         textAlign: 'center',
-                        color: '#FF6B6B', // Coral Energy
+                        color: '#FF6B6B',
                     }}
                 >
                     Random Challenge
                 </h2>
 
-                {/* Challenge Display */}
                 <div
                     style={{
                         minHeight: '200px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#40434E', // Dark Slate
+                        backgroundColor: '#40434E',
                         borderRadius: '0.5rem',
                         padding: '1rem',
                         boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
@@ -189,7 +186,7 @@ function RandomChallenge() {
                     ) : currentChallenge ? (
                         <div
                             style={{
-                                backgroundColor: '#1E1E1E', // Charcoal Black
+                                backgroundColor: '#1E1E1E',
                                 padding: '1.5rem',
                                 borderRadius: '0.5rem',
                                 width: '100%',
@@ -215,7 +212,6 @@ function RandomChallenge() {
                     )}
                 </div>
 
-                {/* Action Buttons */}
                 <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                         onClick={getRandomChallenge}
@@ -245,7 +241,6 @@ function RandomChallenge() {
                     </button>
                 </div>
 
-                {/* Stats */}
                 <div
                     style={{
                         marginTop: '1rem',
@@ -259,7 +254,6 @@ function RandomChallenge() {
                     )}
                 </div>
 
-                {/* Spinner animation */}
                 <style>{`
                     @keyframes spin {
                         0% { transform: rotate(0deg);}

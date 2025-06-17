@@ -182,7 +182,7 @@ function PostCRUD({ currentUser, currentUserData }) {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 mt-8">
             {/* Debug Info */}
             <div className="bg-gray-900 p-2 rounded text-xs text-gray-400">
                 Debug: User: {currentUser ? "✓" : "✗"} | UserData:{" "}
@@ -433,7 +433,6 @@ function PostCRUD({ currentUser, currentUserData }) {
                                                 (e.currentTarget.style.backgroundColor = "#FF6B6B")
                                             }
                                         >
-                                            <span>💬</span>
                                             <span>
                                                 {expandedComments.has(post.id)
                                                     ? "Hide Comments"

@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { doc, updateDoc, collection, addDoc, onSnapshot, deleteDoc, query, where } from 'firebase/firestore';
+import {
+    doc,
+    updateDoc,
+    collection,
+    addDoc,
+    onSnapshot,
+    deleteDoc,
+    query,
+    where,
+} from 'firebase/firestore';
 import { db } from '../App';
 
 function PrivacySettings({ currentUser, currentUserData }) {
@@ -59,12 +68,12 @@ function PrivacySettings({ currentUser, currentUserData }) {
             await updateDoc(userRef, { isPrivate: newPrivacyState });
 
             setIsPrivate(newPrivacyState);
-            setMessage(newPrivacyState ? 'Profiel is nu privé' : 'Profiel is nu openbaar');
+            setMessage(newPrivacyState ? 'Your profile is now private' : 'Your profile is now public');
 
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             console.error('Privacy update error:', error);
-            setMessage('Fout bij het bijwerken van privacy-instellingen');
+            setMessage('Failed to update privacy settings');
             setTimeout(() => setMessage(''), 3000);
         } finally {
             setLoading(false);
@@ -85,12 +94,12 @@ function PrivacySettings({ currentUser, currentUserData }) {
                 blockedAt: new Date()
             });
 
-            setMessage(`${userToBlock.username} is geblokkeerd`);
+            setMessage(`${userToBlock.username} has been blocked`);
             setSearchTerm('');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             console.error('Block user error:', error);
-            setMessage('Fout bij het blokkeren van gebruiker');
+            setMessage('Failed to block user');
             setTimeout(() => setMessage(''), 3000);
         } finally {
             setLoading(false);
@@ -105,11 +114,11 @@ function PrivacySettings({ currentUser, currentUserData }) {
 
         try {
             await deleteDoc(doc(db, 'blockedUsers', blockedUserDoc.id));
-            setMessage(`${blockedUserDoc.blockedUsername} is gedeblokkeerd`);
+            setMessage(`${blockedUserDoc.blockedUsername} has been unblocked`);
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
             console.error('Unblock user error:', error);
-            setMessage('Fout bij het deblokkeren van gebruiker');
+            setMessage('Failed to unblock user');
             setTimeout(() => setMessage(''), 3000);
         } finally {
             setLoading(false);
@@ -123,144 +132,72 @@ function PrivacySettings({ currentUser, currentUserData }) {
         return !isAlreadyBlocked && matchesSearch && searchTerm.length > 0;
     });
 
+    const colors = {
+        bg: '#1e1e1e',
+        card: '#2c2f36',
+        text: '#f4f4f5',
+        red: '#FF6B6B',
+        redHover: '#E55A5A',
+    };
+
     if (!currentUser) {
         return (
-            <div
-                style={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#1E1E1E',
-                    padding: '1rem',
-                }}
-            >
-                <div
-                    style={{
-                        backgroundColor: '#40434E',
-                        padding: '1.5rem',
-                        borderRadius: '0.5rem',
-                        maxWidth: '28rem',
-                        width: '100%',
-                        color: '#B9CFD4',
-                        textAlign: 'center',
-                        fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-                    }}
-                >
-                    <p>Log in om privacy-instellingen te beheren</p>
+            <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+                <div style={{ backgroundColor: colors.card, padding: '1.5rem', borderRadius: '0.5rem', maxWidth: '28rem', width: '100%', color: colors.text, textAlign: 'center' }}>
+                    <p>Please log in to manage privacy settings</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#1E1E1E',
-                padding: '1rem',
-            }}
-        >
-            <div
-                style={{
-                    backgroundColor: '#40434E',
-                    padding: '1.5rem',
-                    borderRadius: '0.5rem',
-                    maxWidth: '32rem',
-                    width: '100%',
-                    color: '#B9CFD4',
-                    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-                    boxSizing: 'border-box',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1.5rem',
-                }}
-            >
-                <h2 style={{ fontSize: '1.75rem', fontWeight: '700', marginBottom: '1rem' }}>
-                    Privacy & Veiligheid
-                </h2>
+        <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+            <div style={{ backgroundColor: colors.card, padding: '1.5rem', borderRadius: '0.5rem', maxWidth: '32rem', width: '100%', color: colors.text, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: '700' }}>Privacy & Safety</h2>
 
-                {/* Tab Navigation */}
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                {/* Tabs */}
+                <div style={{ display: 'flex', gap: '1rem' }}>
                     <button
                         onClick={() => setActiveTab('privacy')}
                         style={{
                             flex: 1,
-                            padding: '0.5rem 1rem',
+                            padding: '0.5rem',
                             borderRadius: '0.5rem',
                             fontWeight: '600',
-                            cursor: 'pointer',
-                            backgroundColor: activeTab === 'privacy' ? '#60636B' : '#40434E',
-                            color: '#B9CFD4',
+                            backgroundColor: activeTab === 'privacy' ? colors.red : colors.card,
+                            color: colors.text,
                             border: 'none',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={e => {
-                            if (activeTab !== 'privacy') e.currentTarget.style.backgroundColor = '#797d8a';
-                        }}
-                        onMouseLeave={e => {
-                            if (activeTab !== 'privacy') e.currentTarget.style.backgroundColor = '#40434E';
+                            cursor: 'pointer',
                         }}
                     >
-                        🔒 Privacy
+                        Privacy
                     </button>
                     <button
                         onClick={() => setActiveTab('blocked')}
                         style={{
                             flex: 1,
-                            padding: '0.5rem 1rem',
+                            padding: '0.5rem',
                             borderRadius: '0.5rem',
                             fontWeight: '600',
-                            cursor: 'pointer',
-                            backgroundColor: activeTab === 'blocked' ? '#60636B' : '#40434E',
-                            color: '#B9CFD4',
+                            backgroundColor: activeTab === 'blocked' ? colors.red : colors.card,
+                            color: colors.text,
                             border: 'none',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={e => {
-                            if (activeTab !== 'blocked') e.currentTarget.style.backgroundColor = '#797d8a';
-                        }}
-                        onMouseLeave={e => {
-                            if (activeTab !== 'blocked') e.currentTarget.style.backgroundColor = '#40434E';
+                            cursor: 'pointer',
                         }}
                     >
-                        🚫 Geblokkeerd ({blockedUsers.length})
+                        Blocked ({blockedUsers.length})
                     </button>
                 </div>
 
-                {/* Privacy Settings Tab */}
                 {activeTab === 'privacy' && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {/* Profile Visibility */}
-                        <div
-                            style={{
-                                backgroundColor: '#60636B',
-                                padding: '1rem',
-                                borderRadius: '0.5rem',
-                                color: '#B9CFD4',
-                            }}
-                        >
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>
-                                Profiel Zichtbaarheid
-                            </h3>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                }}
-                            >
+                    <>
+                        <div style={{ backgroundColor: '#3a3d46', padding: '1rem', borderRadius: '0.5rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>Profile Visibility</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <p style={{ marginBottom: '0.25rem' }}>
-                                        {isPrivate ? '🔒 Privé Profiel' : '🌍 Openbaar Profiel'}
-                                    </p>
-                                    <p style={{ fontSize: '0.875rem', color: '#B9CFD4' }}>
-                                        {isPrivate
-                                            ? 'Alleen vrienden kunnen je posts en profiel zien'
-                                            : 'Iedereen kan je posts en profiel zien'}
+                                    <p>{isPrivate ? 'Private Profile' : 'Public Profile'}</p>
+                                    <p style={{ fontSize: '0.875rem' }}>
+                                        {isPrivate ? 'Only friends can view your posts and profile' : 'Everyone can see your posts and profile'}
                                     </p>
                                 </div>
                                 <button
@@ -270,180 +207,108 @@ function PrivacySettings({ currentUser, currentUserData }) {
                                         padding: '0.5rem 1rem',
                                         borderRadius: '0.5rem',
                                         fontWeight: '600',
-                                        backgroundColor: '#60636B',
-                                        color: '#B9CFD4',
+                                        backgroundColor: colors.red,
+                                        color: 'white',
                                         border: 'none',
                                         cursor: loading ? 'not-allowed' : 'pointer',
-                                        opacity: loading ? 0.6 : 1,
-                                        transition: 'background-color 0.3s ease',
                                     }}
-                                    onMouseEnter={e => {
-                                        if (!loading) e.currentTarget.style.backgroundColor = '#797d8a';
-                                    }}
-                                    onMouseLeave={e => {
-                                        if (!loading) e.currentTarget.style.backgroundColor = '#60636B';
-                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = colors.redHover}
+                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = colors.red}
                                 >
-                                    {loading ? 'Bezig...' : (isPrivate ? 'Privé' : 'Openbaar')}
+                                    {loading ? 'Loading...' : isPrivate ? 'Private' : 'Public'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Block Users */}
-                        <div
-                            style={{
-                                backgroundColor: '#60636B',
-                                padding: '1rem',
-                                borderRadius: '0.5rem',
-                                color: '#B9CFD4',
-                            }}
-                        >
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>
-                                Gebruiker Blokkeren
-                            </h3>
+                        <div style={{ backgroundColor: '#3a3d46', padding: '1rem', borderRadius: '0.5rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>Block User</h3>
                             <input
                                 type="text"
-                                placeholder="Zoek gebruiker om te blokkeren..."
+                                placeholder="Search user to block..."
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 style={{
                                     width: '100%',
                                     padding: '0.75rem',
                                     borderRadius: '0.5rem',
-                                    border: '1px solid #797D8A',
-                                    backgroundColor: '#50525A',
-                                    color: '#B9CFD4',
+                                    border: '1px solid #555',
+                                    backgroundColor: '#2c2f36',
+                                    color: colors.text,
                                     fontSize: '1rem',
                                     marginBottom: '0.75rem',
                                 }}
                             />
                             {searchTerm && (
-                                <div
-                                    style={{
-                                        maxHeight: '160px',
-                                        overflowY: 'auto',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.5rem',
-                                    }}
-                                >
+                                <div style={{ maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                     {filteredUsers.length > 0 ? (
                                         filteredUsers.map(user => (
-                                            <div
-                                                key={user.id}
-                                                style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'center',
-                                                    backgroundColor: '#50525A',
-                                                    padding: '0.5rem',
-                                                    borderRadius: '0.5rem',
-                                                }}
-                                            >
+                                            <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#2c2f36', padding: '0.5rem', borderRadius: '0.5rem' }}>
                                                 <div>
                                                     <p style={{ fontWeight: '600' }}>@{user.username || 'Unknown'}</p>
-                                                    <p style={{ fontSize: '0.875rem', color: '#B9CFD4' }}>{user.email}</p>
+                                                    <p style={{ fontSize: '0.875rem' }}>{user.email}</p>
                                                 </div>
                                                 <button
                                                     onClick={() => handleBlockUser(user)}
                                                     disabled={loading}
                                                     style={{
-                                                        backgroundColor: '#60636B',
-                                                        color: '#B9CFD4',
+                                                        backgroundColor: colors.red,
+                                                        color: 'white',
                                                         padding: '0.25rem 0.75rem',
                                                         borderRadius: '0.5rem',
                                                         fontSize: '0.875rem',
                                                         fontWeight: '600',
                                                         border: 'none',
                                                         cursor: loading ? 'not-allowed' : 'pointer',
-                                                        opacity: loading ? 0.6 : 1,
-                                                        transition: 'background-color 0.3s ease',
                                                     }}
-                                                    onMouseEnter={e => {
-                                                        if (!loading) e.currentTarget.style.backgroundColor = '#797d8a';
-                                                    }}
-                                                    onMouseLeave={e => {
-                                                        if (!loading) e.currentTarget.style.backgroundColor = '#60636B';
-                                                    }}
+                                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = colors.redHover}
+                                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = colors.red}
                                                 >
-                                                    {loading ? '...' : 'Blokkeren'}
+                                                    {loading ? '...' : 'Block'}
                                                 </button>
                                             </div>
                                         ))
                                     ) : (
-                                        <p style={{ color: '#B9CFD4', textAlign: 'center', padding: '0.5rem' }}>
-                                            Geen gebruikers gevonden
-                                        </p>
+                                        <p style={{ textAlign: 'center' }}>No users found</p>
                                     )}
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </>
                 )}
 
-                {/* Blocked Users Tab */}
                 {activeTab === 'blocked' && (
-                    <div
-                        style={{
-                            backgroundColor: '#60636B',
-                            padding: '1rem',
-                            borderRadius: '0.5rem',
-                            color: '#B9CFD4',
-                        }}
-                    >
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>
-                            Geblokkeerde Gebruikers
-                        </h3>
+                    <div style={{ backgroundColor: '#3a3d46', padding: '1rem', borderRadius: '0.5rem' }}>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.75rem' }}>Blocked Users</h3>
                         {blockedUsers.length === 0 ? (
-                            <p style={{ color: '#B9CFD4', textAlign: 'center', padding: '1rem 0' }}>
-                                Je hebt geen gebruikers geblokkeerd
-                            </p>
+                            <p style={{ textAlign: 'center' }}>You have not blocked any users</p>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                {blockedUsers.map(blockedUser => (
-                                    <div
-                                        key={blockedUser.id}
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            backgroundColor: '#50525A',
-                                            padding: '0.75rem',
-                                            borderRadius: '0.5rem',
-                                        }}
-                                    >
+                                {blockedUsers.map(user => (
+                                    <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#2c2f36', padding: '0.75rem', borderRadius: '0.5rem' }}>
                                         <div>
-                                            <p style={{ fontWeight: '600' }}>@{blockedUser.blockedUsername}</p>
-                                            <p style={{ fontSize: '0.875rem', color: '#B9CFD4' }}>
-                                                Geblokkeerd op{' '}
-                                                {blockedUser.blockedAt?.seconds
-                                                    ? new Date(blockedUser.blockedAt.seconds * 1000).toLocaleDateString('nl-NL')
-                                                    : new Date(blockedUser.blockedAt).toLocaleDateString('nl-NL')}
+                                            <p style={{ fontWeight: '600' }}>@{user.blockedUsername}</p>
+                                            <p style={{ fontSize: '0.875rem' }}>
+                                                Blocked on {user.blockedAt?.seconds ? new Date(user.blockedAt.seconds * 1000).toLocaleDateString() : new Date(user.blockedAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() => handleUnblockUser(blockedUser)}
+                                            onClick={() => handleUnblockUser(user)}
                                             disabled={loading}
                                             style={{
-                                                backgroundColor: '#60636B',
-                                                color: '#B9CFD4',
+                                                backgroundColor: colors.red,
+                                                color: 'white',
                                                 padding: '0.25rem 0.75rem',
                                                 borderRadius: '0.5rem',
                                                 fontSize: '0.875rem',
                                                 fontWeight: '600',
                                                 border: 'none',
                                                 cursor: loading ? 'not-allowed' : 'pointer',
-                                                opacity: loading ? 0.6 : 1,
-                                                transition: 'background-color 0.3s ease',
                                             }}
-                                            onMouseEnter={e => {
-                                                if (!loading) e.currentTarget.style.backgroundColor = '#797d8a';
-                                            }}
-                                            onMouseLeave={e => {
-                                                if (!loading) e.currentTarget.style.backgroundColor = '#60636B';
-                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = colors.redHover}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = colors.red}
                                         >
-                                            {loading ? '...' : 'Deblokkeren'}
+                                            {loading ? '...' : 'Unblock'}
                                         </button>
                                     </div>
                                 ))}
@@ -452,18 +317,15 @@ function PrivacySettings({ currentUser, currentUserData }) {
                     </div>
                 )}
 
-                {/* Status Message */}
                 {message && (
-                    <div
-                        style={{
-                            marginTop: '1rem',
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            color: '#B9CFD4',
-                            textAlign: 'center',
-                            backgroundColor: message.includes('Fout') ? '#922B21' : '#2E8B57',
-                        }}
-                    >
+                    <div style={{
+                        marginTop: '1rem',
+                        padding: '0.75rem',
+                        borderRadius: '0.5rem',
+                        textAlign: 'center',
+                        backgroundColor: message.includes('Failed') ? '#922B21' : '#2E8B57',
+                        color: '#fff',
+                    }}>
                         {message}
                     </div>
                 )}

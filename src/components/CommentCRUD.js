@@ -167,7 +167,7 @@ function CommentCRUD({ currentUser, postId, currentUserData }) {
 
             {!currentUser && (
                 <div className="text-xs text-gray-500 bg-gray-800 p-2 rounded">
-                    💡 You're posting anonymously. Log in to like comments and have a username.
+                    You're posting anonymously. Log in to like comments and have a username.
                 </div>
             )}
 
@@ -181,7 +181,6 @@ function CommentCRUD({ currentUser, postId, currentUserData }) {
                                         comment.isAnonymous ? 'text-gray-400' : 'text-[#FF6B6B]'
                                     }`}>
                                         @{comment.authorUsername}
-                                        {comment.isAnonymous && ' 👤'}
                                     </span>
                                     <p className="text-xs text-gray-500">
                                         {comment.createdAt instanceof Date

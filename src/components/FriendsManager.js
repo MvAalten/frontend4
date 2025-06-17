@@ -15,7 +15,6 @@ import {
     getDocs,
 } from 'firebase/firestore';
 import { db } from '../App';
-import FriendChat from './FriendChat';
 
 function FriendsManager({ currentUser }) {
     const [friends, setFriends] = useState([]);
@@ -27,7 +26,6 @@ function FriendsManager({ currentUser }) {
     const [message, setMessage] = useState('');
     const [activeTab, setActiveTab] = useState('friends'); // friends, requests, search
     const [blockedUsers, setBlockedUsers] = useState([]);
-    const [selectedFriend, setSelectedFriend] = useState(null);
 
     // Load blocked users
     useEffect(() => {
@@ -160,6 +158,7 @@ function FriendsManager({ currentUser }) {
         return () => unsub();
     }, [currentUser, blockedUsers]);
 
+    // Send friend request
     const sendFriendRequest = async (targetUser) => {
         if (!currentUser) return;
         setLoading(true);
@@ -174,7 +173,7 @@ function FriendsManager({ currentUser }) {
             );
             const existingSnap = await getDocs(existingQ);
             if (!existingSnap.empty) {
-                setMessage('A friendship or request already exists with this user');
+                setMessage('Er bestaat al een vriendschap of verzoek met deze gebruiker');
                 setLoading(false);
                 return;
             }
@@ -187,16 +186,17 @@ function FriendsManager({ currentUser }) {
                 updatedAt: serverTimestamp(),
             });
 
-            setMessage(`Friend request sent to ${targetUser.username}`);
+            setMessage(`Vriendschapsverzoek verzonden naar ${targetUser.username}`);
             setSearchTerm('');
         } catch (e) {
             console.error('Error sending friend request:', e);
-            setMessage('Error sending friend request');
+            setMessage('Fout bij het verzenden van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Accept friend request
     const acceptFriendRequest = async (requestId) => {
         setLoading(true);
         setMessage('');
@@ -205,68 +205,70 @@ function FriendsManager({ currentUser }) {
                 status: 'accepted',
                 updatedAt: serverTimestamp(),
             });
-            setMessage('Friend request accepted!');
+            setMessage('Vriendschapsverzoek geaccepteerd!');
         } catch (e) {
             console.error('Error accepting friend request:', e);
-            setMessage('Error accepting friend request');
+            setMessage('Fout bij het accepteren van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Reject friend request
     const rejectFriendRequest = async (requestId, requesterName) => {
         setLoading(true);
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
-            setMessage(`Friend request from ${requesterName} rejected`);
+            setMessage(`Vriendschapsverzoek van ${requesterName} afgewezen`);
         } catch (e) {
             console.error('Error rejecting friend request:', e);
-            setMessage('Error rejecting friend request');
+            setMessage('Fout bij het afwijzen van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Cancel sent friend request
     const cancelFriendRequest = async (requestId, receiverName) => {
         setLoading(true);
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
-            setMessage(`Friend request to ${receiverName} canceled`);
+            setMessage(`Vriendschapsverzoek naar ${receiverName} ingetrokken`);
         } catch (e) {
             console.error('Error canceling friend request:', e);
-            setMessage('Error canceling friend request');
+            setMessage('Fout bij het intrekken van vriendschapsverzoek');
         } finally {
             setLoading(false);
         }
     };
 
+    // Remove friend
     const removeFriend = async (friendshipId, friendName) => {
-        if (!window.confirm(`Are you sure you want to remove ${friendName} as a friend?`)) return;
+        if (!window.confirm(`Weet je zeker dat je ${friendName} als vriend wilt verwijderen?`)) return;
         setLoading(true);
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', friendshipId));
-            setMessage(`${friendName} removed from your friends`);
+            setMessage(`${friendName} verwijderd als vriend`);
         } catch (e) {
             console.error('Error removing friend:', e);
-            setMessage('Error removing friend');
+            setMessage('Fout bij het verwijderen van vriend');
         } finally {
             setLoading(false);
         }
     };
 
+    // Get relationship status for search filtering
     const getRelationshipStatus = (userId) => {
         if (friends.some((f) => f.friendId === userId)) return 'friends';
         if (sentRequests.some((s) => s.receiverId === userId)) return 'sent';
         if (friendRequests.some((r) => r.requesterId === userId)) return 'received';
         return 'none';
-    };
+    }
 
-    const openChat = (friend) => setSelectedFriend(friend);
-    const closeChat = () => setSelectedFriend(null);
-
+    // Filter users for search tab
     const filteredUsers = allUsers.filter((user) => {
         const matchesSearch =
             user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -277,15 +279,16 @@ function FriendsManager({ currentUser }) {
     if (!currentUser) {
         return (
             <div className="bg-gray-800 p-6 rounded-lg">
-                <p className="text-gray-300">Log in to manage your friends</p>
+                <p className="text-gray-300">Log in om vrienden te beheren</p>
             </div>
         );
     }
 
     return (
         <div className="bg-gray-800 p-6 rounded-lg max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-[#FF6B6B]">Manage Friends</h2>
+            <h2 className="text-2xl font-bold mb-6 text-[#FF6B6B]">Vrienden Beheren</h2>
 
+            {/* Tabs */}
             <div className="flex space-x-4 mb-6">
                 <button
                     onClick={() => setActiveTab('friends')}
@@ -295,7 +298,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Friends ({friends.length})
+                    Vrienden ({friends.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('requests')}
@@ -305,7 +308,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Requests ({friendRequests.length})
+                    Verzoeken ({friendRequests.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('search')}
@@ -315,7 +318,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Search
+                    Zoeken
                 </button>
             </div>
 
@@ -323,58 +326,53 @@ function FriendsManager({ currentUser }) {
                 <div className="mb-4 p-2 bg-[#FF6B6B]/20 text-[#FF6B6B] rounded">{message}</div>
             )}
 
-            {/* Friends tab */}
+            {/* Friends Tab */}
             {activeTab === 'friends' && (
                 <div className="space-y-4">
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">My Friends</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Mijn Vrienden</h3>
                         {friends.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">You have no friends added yet.</p>
+                            <p className="text-gray-400 text-center py-4">Je hebt nog geen vrienden toegevoegd</p>
                         ) : (
                             <div className="space-y-3">
-                                {friends.map((friend) => (
-                                    <div
-                                        key={friend.id}
-                                        className="flex items-center justify-between bg-gray-600 p-3 rounded"
-                                    >
-                                        <div>
-                                            <p className="font-medium">@{friend.friendData.username}</p>
-                                            <p className="text-sm text-gray-300">{friend.friendData.email}</p>
-                                            <p className="text-xs text-gray-400">
-                                                Friends since{' '}
-                                                {new Date(friend.updatedAt?.seconds * 1000).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => openChat(friend)}
-                                                className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm"
-                                            >
-                                                💬 Chat
-                                            </button>
+                                {friends.map((friend) => {
+                                    return (
+                                        <div
+                                            key={friend.id}
+                                            className="flex items-center justify-between bg-gray-600 p-3 rounded"
+                                        >
+                                            <div>
+                                                <p className="font-medium">@{friend.friendData.username}</p>
+                                                <p className="text-sm text-gray-300">{friend.friendData.email}</p>
+                                                <p className="text-xs text-gray-400">
+                                                    Vrienden sinds{' '}
+                                                    {new Date(friend.updatedAt?.seconds * 1000).toLocaleDateString('nl-NL')}
+                                                </p>
+                                            </div>
                                             <button
                                                 onClick={() => removeFriend(friend.id, friend.friendData.username)}
                                                 disabled={loading}
                                                 className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Remove
+                                                Verwijderen
                                             </button>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Requests tab */}
+            {/* Requests Tab */}
             {activeTab === 'requests' && (
                 <div className="space-y-6">
+                    {/* Incoming requests */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Received</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Ontvangen Verzoeken</h3>
                         {friendRequests.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">No new requests</p>
+                            <p className="text-gray-400 text-center py-4">Geen nieuwe vriendschapsverzoeken</p>
                         ) : (
                             <div className="space-y-3">
                                 {friendRequests.map((req) => (
@@ -392,14 +390,14 @@ function FriendsManager({ currentUser }) {
                                                 disabled={loading}
                                                 className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Accept
+                                                Accepteer
                                             </button>
                                             <button
                                                 onClick={() => rejectFriendRequest(req.id, req.requesterData.username)}
                                                 disabled={loading}
                                                 className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Decline
+                                                Weiger
                                             </button>
                                         </div>
                                     </div>
@@ -408,10 +406,11 @@ function FriendsManager({ currentUser }) {
                         )}
                     </div>
 
+                    {/* Sent requests */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Sent Requests</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Verzonden Verzoeken</h3>
                         {sentRequests.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">No sent friend requests</p>
+                            <p className="text-gray-400 text-center py-4">Geen verzonden vriendschapsverzoeken</p>
                         ) : (
                             <div className="space-y-3">
                                 {sentRequests.map((req) => (
@@ -428,7 +427,7 @@ function FriendsManager({ currentUser }) {
                                             disabled={loading}
                                             className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                         >
-                                            Cancel
+                                            Intrekken
                                         </button>
                                     </div>
                                 ))}
@@ -438,19 +437,19 @@ function FriendsManager({ currentUser }) {
                 </div>
             )}
 
-            {/* Search tab */}
+            {/* Search Tab */}
             {activeTab === 'search' && (
                 <div>
                     <input
                         type="text"
-                        placeholder="Search users by name or email"
+                        placeholder="Zoek gebruikers op naam of email"
                         className="w-full p-2 rounded mb-4 bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-[#FF6B6B]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         disabled={loading}
                     />
                     {filteredUsers.length === 0 ? (
-                        <p className="text-gray-400 text-center py-4">No users found</p>
+                        <p className="text-gray-400 text-center py-4">Geen gebruikers gevonden</p>
                     ) : (
                         <div className="space-y-3">
                             {filteredUsers.map((user) => (
@@ -467,22 +466,13 @@ function FriendsManager({ currentUser }) {
                                         disabled={loading}
                                         className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm disabled:opacity-50"
                                     >
-                                        Add
+                                        Voeg toe
                                     </button>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-            )}
-
-            {selectedFriend && (
-                <FriendChat
-                    currentUser={currentUser}
-                    friend={selectedFriend}
-                    onClose={closeChat}
-                    redColor="#FF6B6B"
-                />
             )}
         </div>
     );
