@@ -37,7 +37,7 @@ function ReportCRUD() {
 
     return (
         <div className="space-y-6 p-6 max-w-xl mx-auto">
-            <div className="bg-[#40434E] p-6 rounded-lg">
+            <div className="bg-gray-800 p-6 rounded-lg">
                 <h2 className="text-2xl font-bold mb-4 text-white">Submit Report</h2>
 
                 <form onSubmit={handleCreateReport} className="space-y-4">
@@ -48,7 +48,7 @@ function ReportCRUD() {
                             placeholder="Report"
                             value={newReport.title}
                             onChange={(e) => setNewReport({ ...newReport, title: e.target.value })}
-                            className="w-full p-3 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4]"
+                            className="w-full p-3 bg-gray-700 text-white rounded border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]"
                             disabled={loading}
                         />
                     </div>
@@ -59,7 +59,7 @@ function ReportCRUD() {
                             placeholder="Report content"
                             value={newReport.content}
                             onChange={(e) => setNewReport({ ...newReport, content: e.target.value })}
-                            className="w-full p-3 bg-[#B9CFD4] text-black rounded border border-[#B9CFD4] h-32 resize-none"
+                            className="w-full p-3 bg-gray-700 text-white rounded border border-gray-700 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]"
                             disabled={loading}
                         />
                     </div>
