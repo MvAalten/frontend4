@@ -173,7 +173,7 @@ function FriendsManager({ currentUser }) {
             );
             const existingSnap = await getDocs(existingQ);
             if (!existingSnap.empty) {
-                setMessage('Er bestaat al een vriendschap of verzoek met deze gebruiker');
+                setMessage('There is already a friendship or request with this user');
                 setLoading(false);
                 return;
             }
@@ -186,11 +186,11 @@ function FriendsManager({ currentUser }) {
                 updatedAt: serverTimestamp(),
             });
 
-            setMessage(`Vriendschapsverzoek verzonden naar ${targetUser.username}`);
+            setMessage(`Friend request sent to ${targetUser.username}`);
             setSearchTerm('');
         } catch (e) {
             console.error('Error sending friend request:', e);
-            setMessage('Fout bij het verzenden van vriendschapsverzoek');
+            setMessage('Error sending friend request');
         } finally {
             setLoading(false);
         }
@@ -205,10 +205,10 @@ function FriendsManager({ currentUser }) {
                 status: 'accepted',
                 updatedAt: serverTimestamp(),
             });
-            setMessage('Vriendschapsverzoek geaccepteerd!');
+            setMessage('Friend request accepted!');
         } catch (e) {
             console.error('Error accepting friend request:', e);
-            setMessage('Fout bij het accepteren van vriendschapsverzoek');
+            setMessage('Error accepting friend request');
         } finally {
             setLoading(false);
         }
@@ -220,10 +220,10 @@ function FriendsManager({ currentUser }) {
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
-            setMessage(`Vriendschapsverzoek van ${requesterName} afgewezen`);
+            setMessage(`Friend request from ${requesterName} rejected`);
         } catch (e) {
             console.error('Error rejecting friend request:', e);
-            setMessage('Fout bij het afwijzen van vriendschapsverzoek');
+            setMessage('Error rejecting friend request');
         } finally {
             setLoading(false);
         }
@@ -235,10 +235,10 @@ function FriendsManager({ currentUser }) {
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', requestId));
-            setMessage(`Vriendschapsverzoek naar ${receiverName} ingetrokken`);
+            setMessage(`Friend request to ${receiverName} withdrawn`);
         } catch (e) {
             console.error('Error canceling friend request:', e);
-            setMessage('Fout bij het intrekken van vriendschapsverzoek');
+            setMessage('Error canceling friend request');
         } finally {
             setLoading(false);
         }
@@ -246,15 +246,15 @@ function FriendsManager({ currentUser }) {
 
     // Remove friend
     const removeFriend = async (friendshipId, friendName) => {
-        if (!window.confirm(`Weet je zeker dat je ${friendName} als vriend wilt verwijderen?`)) return;
+        if (!window.confirm(`Are you sure you want to remove ${friendName} as a friend?`)) return;
         setLoading(true);
         setMessage('');
         try {
             await deleteDoc(doc(db, 'friendships', friendshipId));
-            setMessage(`${friendName} verwijderd als vriend`);
+            setMessage(`${friendName} removed as friend`);
         } catch (e) {
             console.error('Error removing friend:', e);
-            setMessage('Fout bij het verwijderen van vriend');
+            setMessage('Error removing friend');
         } finally {
             setLoading(false);
         }
@@ -279,14 +279,14 @@ function FriendsManager({ currentUser }) {
     if (!currentUser) {
         return (
             <div className="bg-gray-800 p-6 rounded-lg">
-                <p className="text-gray-300">Log in om vrienden te beheren</p>
+                <p className="text-gray-300">Log in to manage friends</p>
             </div>
         );
     }
 
     return (
         <div className="bg-gray-800 p-6 rounded-lg max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6 text-[#FF6B6B]">Vrienden Beheren</h2>
+            <h2 className="text-2xl font-bold mb-6 text-[#FF6B6B]">Manage Friends</h2>
 
             {/* Tabs */}
             <div className="flex space-x-4 mb-6">
@@ -298,7 +298,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Vrienden ({friends.length})
+                    Friends ({friends.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('requests')}
@@ -308,7 +308,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Verzoeken ({friendRequests.length})
+                    Requests ({friendRequests.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('search')}
@@ -318,7 +318,7 @@ function FriendsManager({ currentUser }) {
                             : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                 >
-                    Zoeken
+                    Search
                 </button>
             </div>
 
@@ -330,9 +330,9 @@ function FriendsManager({ currentUser }) {
             {activeTab === 'friends' && (
                 <div className="space-y-4">
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Mijn Vrienden</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">My Friends</h3>
                         {friends.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">Je hebt nog geen vrienden toegevoegd</p>
+                            <p className="text-gray-400 text-center py-4">You haven't added any friends yet</p>
                         ) : (
                             <div className="space-y-3">
                                 {friends.map((friend) => {
@@ -354,7 +354,7 @@ function FriendsManager({ currentUser }) {
                                                 disabled={loading}
                                                 className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                             >
-                                                Verwijderen
+                                                Delete
                                             </button>
                                         </div>
                                     );
@@ -370,9 +370,9 @@ function FriendsManager({ currentUser }) {
                 <div className="space-y-6">
                     {/* Incoming requests */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Ontvangen Verzoeken</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Received Requests</h3>
                         {friendRequests.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">Geen nieuwe vriendschapsverzoeken</p>
+                            <p className="text-gray-400 text-center py-4">No new friend requests</p>
                         ) : (
                             <div className="space-y-3">
                                 {friendRequests.map((req) => (
@@ -408,9 +408,9 @@ function FriendsManager({ currentUser }) {
 
                     {/* Sent requests */}
                     <div className="bg-gray-700 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold mb-3 text-white">Verzonden Verzoeken</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-white">Sent Requests</h3>
                         {sentRequests.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">Geen verzonden vriendschapsverzoeken</p>
+                            <p className="text-gray-400 text-center py-4">No friend requests sent</p>
                         ) : (
                             <div className="space-y-3">
                                 {sentRequests.map((req) => (
@@ -427,7 +427,7 @@ function FriendsManager({ currentUser }) {
                                             disabled={loading}
                                             className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm disabled:opacity-50"
                                         >
-                                            Intrekken
+                                            Withdraw
                                         </button>
                                     </div>
                                 ))}
@@ -442,14 +442,14 @@ function FriendsManager({ currentUser }) {
                 <div>
                     <input
                         type="text"
-                        placeholder="Zoek gebruikers op naam of email"
+                        placeholder="Search users by name or email"
                         className="w-full p-2 rounded mb-4 bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-[#FF6B6B]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         disabled={loading}
                     />
                     {filteredUsers.length === 0 ? (
-                        <p className="text-gray-400 text-center py-4">Geen gebruikers gevonden</p>
+                        <p className="text-gray-400 text-center py-4">No users found</p>
                     ) : (
                         <div className="space-y-3">
                             {filteredUsers.map((user) => (
@@ -466,7 +466,7 @@ function FriendsManager({ currentUser }) {
                                         disabled={loading}
                                         className="bg-[#FF6B6B] hover:bg-[#e85b5b] px-3 py-1 rounded text-sm disabled:opacity-50"
                                     >
-                                        Voeg toe
+                                        Add
                                     </button>
                                 </div>
                             ))}

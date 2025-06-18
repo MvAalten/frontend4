@@ -44,7 +44,7 @@ const Login = ({ onLoginSuccess }) => {
                 username: additionalData.username || displayName || userEmail.split("@")[0],
                 email: userEmail,
                 password: additionalData.password || "google_auth",
-                role: "user", // Default role
+                role: "user",
             };
 
             try {
@@ -83,9 +83,9 @@ const Login = ({ onLoginSuccess }) => {
         } catch (err) {
             setError(
                 err.code === "auth/invalid-credential"
-                    ? "Ongeldige inloggegevens. Controleer je e-mail en wachtwoord."
+                    ? "Invalid login credentials. Please check your email and password."
                     : err.code === "auth/email-already-in-use"
-                        ? "Dit e-mailadres is al in gebruik."
+                        ? "This email is already in use."
                         : err.message
             );
         } finally {
@@ -114,7 +114,7 @@ const Login = ({ onLoginSuccess }) => {
         <div className="max-w-md mx-auto">
             <div className="bg-white rounded-xl shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-6 text-center text-black">
-                    {isRegister ? "Registreren" : "Inloggen"}
+                    {isRegister ? "Register" : "Login"}
                 </h2>
 
                 <div className="mb-6">
@@ -123,7 +123,7 @@ const Login = ({ onLoginSuccess }) => {
                         disabled={loading}
                         className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600 disabled:opacity-50"
                     >
-                        {loading ? "Bezig..." : "Inloggen met Google"}
+                        {loading ? "Loading..." : "Login with Google"}
                     </button>
                 </div>
 
@@ -132,7 +132,7 @@ const Login = ({ onLoginSuccess }) => {
                         <div className="w-full border-t border-gray-300"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">of</span>
+                        <span className="px-2 bg-white text-gray-500">or</span>
                     </div>
                 </div>
 
@@ -143,12 +143,12 @@ const Login = ({ onLoginSuccess }) => {
                                 htmlFor="username"
                                 className="block text-sm font-medium text-gray-700 mb-1"
                             >
-                                Gebruikersnaam
+                                Username
                             </label>
                             <input
                                 id="username"
                                 type="text"
-                                placeholder="Voer je gebruikersnaam in"
+                                placeholder="Enter your username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required={isRegister}
@@ -162,12 +162,12 @@ const Login = ({ onLoginSuccess }) => {
                             htmlFor="email"
                             className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                            E-mail
+                            Email
                         </label>
                         <input
                             id="email"
                             type="email"
-                            placeholder="Voer je e-mail in"
+                            placeholder="Enter your email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -180,12 +180,12 @@ const Login = ({ onLoginSuccess }) => {
                             htmlFor="password"
                             className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                            Wachtwoord
+                            Password
                         </label>
                         <input
                             id="password"
                             type="password"
-                            placeholder="Voer je wachtwoord in"
+                            placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
@@ -199,7 +199,7 @@ const Login = ({ onLoginSuccess }) => {
                                 type="button"
                                 className="text-blue-600 hover:underline text-sm"
                             >
-                                Wachtwoord vergeten?
+                                Forgot password?
                             </button>
                         </div>
                     )}
@@ -209,7 +209,7 @@ const Login = ({ onLoginSuccess }) => {
                         disabled={loading}
                         className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Bezig..." : isRegister ? "Registreren" : "Inloggen"}
+                        {loading ? "Loading..." : isRegister ? "Register" : "Login"}
                     </button>
                 </form>
 
@@ -219,13 +219,13 @@ const Login = ({ onLoginSuccess }) => {
 
                 <div className="mt-4 text-center">
                     <p className="text-sm text-gray-600">
-                        {isRegister ? "Heb je al een account?" : "Nog geen account?"}{" "}
+                        {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
                         <button
                             type="button"
                             onClick={() => setIsRegister(!isRegister)}
                             className="text-blue-600 hover:underline"
                         >
-                            {isRegister ? "Inloggen" : "Registreren"}
+                            {isRegister ? "Login" : "Register"}
                         </button>
                     </p>
                 </div>
