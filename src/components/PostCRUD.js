@@ -592,7 +592,7 @@ function TaskCRUD({ currentUser, currentUserData }) {
                                                         }
                                                     }}
                                                 >
-                                                    <span>❤️</span>
+                                                    <span>Priority:</span>
                                                     <span>{task.likeCount || 0}</span>
                                                 </button>
 
@@ -610,7 +610,7 @@ function TaskCRUD({ currentUser, currentUserData }) {
                                                     <span>
                                                         {expandedComments.has(task.id)
                                                             ? "Hide Comments"
-                                                            : "Show Comments"}
+                                                            : "Add Comments"}
                                                     </span>
                                                 </button>
 
