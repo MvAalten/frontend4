@@ -80,7 +80,7 @@ const SearchHeader = ({ currentUser, currentUserData, onSignOut, onShowLogin }) 
             <div className="fixed top-0 w-full z-50 bg-[#1E1E1E] border-b border-[#B9CFD4] backdrop-blur-md">
                 {/* Top Row - Brand and Auth */}
                 <div className="px-4 py-3 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold tracking-wider text-[#FF6B6B]">GymTok</h1>
+                    <h1 className="text-2xl font-bold tracking-wider text-[#FF6B6B]">Motivated</h1>
                     {currentUser ? (
                         <div className="text-right text-sm">
                             <p className="text-[#B9CFD4]">{currentUserData?.username || currentUser.email}</p>

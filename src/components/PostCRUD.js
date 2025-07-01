@@ -10,21 +10,20 @@ import {
     arrayRemove,
     getDoc,
     serverTimestamp,
+    where,
+    query,
 } from "firebase/firestore";
 import { db } from "../App";
 import CommentCRUD from "./CommentCRUD";
 
-function PostCRUD({ currentUser, currentUserData }) {
-    const [posts, setPosts] = useState([]);
-    const [newPost, setNewPost] = useState({ title: "", content: "" });
+function TaskCRUD({ currentUser, currentUserData }) {
+    const [tasks, setTasks] = useState([]);
     const [newTask, setNewTask] = useState({ title: "", content: "", deadline: "" });
-    const [editingPost, setEditingPost] = useState(null);
+    const [editingTask, setEditingTask] = useState(null);
     const [editForm, setEditForm] = useState({ title: "", content: "", deadline: "" });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [expandedComments, setExpandedComments] = useState(new Set());
     const [isUserDataLoading, setIsUserDataLoading] = useState(true);
-    const [postType, setPostType] = useState("post"); // "post" or "task"
-    const [completedTasks, setCompletedTasks] = useState(new Set());
 
     useEffect(() => {
         if (currentUser !== null) {
@@ -38,42 +37,53 @@ function PostCRUD({ currentUser, currentUserData }) {
     }, [currentUser]);
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(
-            collection(db, "posts"),
-            (snapshot) => {
-                const postList = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    createdAt: doc.data().createdAt?.toDate() || new Date(),
-                    deadline: doc.data().deadline?.toDate?.() || doc.data().deadline,
-                }));
-                postList.sort((a, b) => b.createdAt - a.createdAt);
-                setPosts(postList);
-            },
-            (error) => {
-                console.error("Error fetching posts:", error);
-            }
-        );
-        return () => unsubscribe();
-    }, []);
-
-    const handleCreatePost = async (e) => {
-        e.preventDefault();
-
+        // Only fetch tasks if user is logged in
         if (!currentUser) {
-            alert("Please log in to create a post");
+            setTasks([]);
             return;
         }
 
-        const isTask = postType === "task";
-        const currentData = isTask ? newTask : newPost;
+        // Create a query that filters for tasks belonging to the current user
+        const tasksQuery = query(
+            collection(db, "posts"),
+            where("type", "==", "task"),
+            where("authorId", "==", currentUser.uid)
+        );
 
-        if (!currentData.title.trim() || !currentData.content.trim()) {
+        const unsubscribe = onSnapshot(
+            tasksQuery,
+            (snapshot) => {
+                const taskList = snapshot.docs
+                    .map((doc) => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        createdAt: doc.data().createdAt?.toDate() || new Date(),
+                        deadline: doc.data().deadline?.toDate?.() || doc.data().deadline,
+                    }));
+                taskList.sort((a, b) => b.createdAt - a.createdAt);
+                setTasks(taskList);
+            },
+            (error) => {
+                console.error("Error fetching tasks:", error);
+            }
+        );
+        return () => unsubscribe();
+    }, [currentUser]); // Re-run when currentUser changes
+
+    const handleCreateTask = async (e) => {
+        e.preventDefault();
+
+        if (!currentUser) {
+            alert("Please log in to create a task");
+            return;
+        }
+
+        if (!newTask.title.trim() || !newTask.content.trim()) {
             alert("Please fill in both title and content");
             return;
         }
 
-        if (isTask && !currentData.deadline) {
+        if (!newTask.deadline) {
             alert("Please set a deadline for the task");
             return;
         }
@@ -87,62 +97,51 @@ function PostCRUD({ currentUser, currentUserData }) {
                 currentUser.email ||
                 "Anonymous User";
 
-            const postData = {
-                title: currentData.title.trim(),
-                content: currentData.content.trim(),
+            const taskData = {
+                title: newTask.title.trim(),
+                content: newTask.content.trim(),
                 authorId: currentUser.uid,
                 authorUsername,
                 likes: [],
                 likeCount: 0,
                 createdAt: serverTimestamp(),
-                type: postType,
+                type: "task",
                 isCompleted: false,
+                deadline: new Date(newTask.deadline),
             };
 
-            if (isTask) {
-                postData.deadline = new Date(currentData.deadline);
-            }
+            await addDoc(collection(db, "posts"), taskData);
 
-            await addDoc(collection(db, "posts"), postData);
-
-            if (isTask) {
-                setNewTask({ title: "", content: "", deadline: "" });
-            } else {
-                setNewPost({ title: "", content: "" });
-            }
-
-            alert(`${isTask ? "Task" : "Post"} created successfully!`);
+            setNewTask({ title: "", content: "", deadline: "" });
+            alert("Task created successfully!");
         } catch (error) {
-            console.error(`Error creating ${postType}:`, error);
-            alert(`Error creating ${postType}: ${error.message}`);
+            console.error("Error creating task:", error);
+            alert(`Error creating task: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleEditPost = (post) => {
-        setEditingPost(post.id);
+    const handleEditTask = (task) => {
+        setEditingTask(task.id);
         setEditForm({
-            title: post.title,
-            content: post.content,
-            deadline: post.deadline ?
-                (post.deadline instanceof Date ?
-                        post.deadline.toISOString().slice(0, 16) :
-                        new Date(post.deadline).toISOString().slice(0, 16)
+            title: task.title,
+            content: task.content,
+            deadline: task.deadline ?
+                (task.deadline instanceof Date ?
+                        task.deadline.toISOString().slice(0, 16) :
+                        new Date(task.deadline).toISOString().slice(0, 16)
                 ) : ""
         });
     };
 
-    const handleUpdatePost = async (postId) => {
-        const post = posts.find(p => p.id === postId);
-        const isTask = post.type === "task";
-
+    const handleUpdateTask = async (taskId) => {
         if (!editForm.title.trim() || !editForm.content.trim()) {
             alert("Please fill in both title and content");
             return;
         }
 
-        if (isTask && !editForm.deadline) {
+        if (!editForm.deadline) {
             alert("Please set a deadline for the task");
             return;
         }
@@ -151,50 +150,44 @@ function PostCRUD({ currentUser, currentUserData }) {
             const updateData = {
                 title: editForm.title.trim(),
                 content: editForm.content.trim(),
+                deadline: new Date(editForm.deadline),
                 updatedAt: serverTimestamp(),
             };
 
-            if (isTask) {
-                updateData.deadline = new Date(editForm.deadline);
-            }
-
-            await updateDoc(doc(db, "posts", postId), updateData);
-            setEditingPost(null);
-            alert(`${isTask ? "Task" : "Post"} updated successfully!`);
+            await updateDoc(doc(db, "posts", taskId), updateData);
+            setEditingTask(null);
+            alert("Task updated successfully!");
         } catch (error) {
-            console.error(`Error updating ${isTask ? "task" : "post"}:`, error);
-            alert(`Error updating ${isTask ? "task" : "post"}: ${error.message}`);
+            console.error("Error updating task:", error);
+            alert(`Error updating task: ${error.message}`);
         }
     };
 
-    const handleDeletePost = async (postId) => {
-        const post = posts.find(p => p.id === postId);
-        const isTask = post.type === "task";
-
-        if (window.confirm(`Are you sure you want to delete this ${isTask ? "task" : "post"}?`)) {
+    const handleDeleteTask = async (taskId) => {
+        if (window.confirm("Are you sure you want to delete this task?")) {
             try {
-                await deleteDoc(doc(db, "posts", postId));
-                alert(`${isTask ? "Task" : "Post"} deleted successfully!`);
+                await deleteDoc(doc(db, "posts", taskId));
+                alert("Task deleted successfully!");
             } catch (error) {
-                console.error(`Error deleting ${isTask ? "task" : "post"}:`, error);
-                alert(`Error deleting ${isTask ? "task" : "post"}: ${error.message}`);
+                console.error("Error deleting task:", error);
+                alert(`Error deleting task: ${error.message}`);
             }
         }
     };
 
-    const handleToggleTaskCompletion = async (postId) => {
+    const handleToggleTaskCompletion = async (taskId) => {
         if (!currentUser) {
             alert("Please log in to mark tasks as complete");
             return;
         }
 
-        const post = posts.find(p => p.id === postId);
-        if (!post || post.type !== "task") return;
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
 
         try {
-            await updateDoc(doc(db, "posts", postId), {
-                isCompleted: !post.isCompleted,
-                completedAt: !post.isCompleted ? serverTimestamp() : null,
+            await updateDoc(doc(db, "posts", taskId), {
+                isCompleted: !task.isCompleted,
+                completedAt: !task.isCompleted ? serverTimestamp() : null,
             });
         } catch (error) {
             console.error("Error updating task completion:", error);
@@ -202,48 +195,48 @@ function PostCRUD({ currentUser, currentUserData }) {
         }
     };
 
-    const handleLikePost = async (postId) => {
+    const handleLikeTask = async (taskId) => {
         if (!currentUser) {
-            alert("Please log in to like posts");
+            alert("Please log in to like tasks");
             return;
         }
 
         try {
-            const postRef = doc(db, "posts", postId);
-            const postSnap = await getDoc(postRef);
+            const taskRef = doc(db, "posts", taskId);
+            const taskSnap = await getDoc(taskRef);
 
-            if (!postSnap.exists()) {
-                alert("Post not found");
+            if (!taskSnap.exists()) {
+                alert("Task not found");
                 return;
             }
 
-            const postData = postSnap.data();
-            const likes = postData.likes || [];
+            const taskData = taskSnap.data();
+            const likes = taskData.likes || [];
 
             if (likes.includes(currentUser.uid)) {
-                await updateDoc(postRef, {
+                await updateDoc(taskRef, {
                     likes: arrayRemove(currentUser.uid),
-                    likeCount: Math.max(0, (postData.likeCount || 0) - 1),
+                    likeCount: Math.max(0, (taskData.likeCount || 0) - 1),
                 });
             } else {
-                await updateDoc(postRef, {
+                await updateDoc(taskRef, {
                     likes: arrayUnion(currentUser.uid),
-                    likeCount: (postData.likeCount || 0) + 1,
+                    likeCount: (taskData.likeCount || 0) + 1,
                 });
             }
         } catch (error) {
-            console.error("Error liking post:", error);
-            alert(`Error liking post: ${error.message}`);
+            console.error("Error liking task:", error);
+            alert(`Error liking task: ${error.message}`);
         }
     };
 
-    const toggleComments = (postId) => {
+    const toggleComments = (taskId) => {
         setExpandedComments((prev) => {
             const newSet = new Set(prev);
-            if (newSet.has(postId)) {
-                newSet.delete(postId);
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId);
             } else {
-                newSet.add(postId);
+                newSet.add(taskId);
             }
             return newSet;
         });
@@ -273,99 +266,59 @@ function PostCRUD({ currentUser, currentUserData }) {
             {/* Debug Info */}
             <div className="bg-gray-900 p-2 rounded text-xs text-gray-400">
                 Debug: User: {currentUser ? "✓" : "✗"} | UserData:{" "}
-                {currentUserData ? "✓" : "✗"} | Posts: {posts.length} | Loading:{" "}
+                {currentUserData ? "✓" : "✗"} | Tasks: {tasks.length} | Loading:{" "}
                 {isUserDataLoading ? "✓" : "✗"}
             </div>
 
-            {/* Create Post/Task Form */}
+            {/* Create Task Form */}
             {currentUser ? (
                 <div className="bg-gray-800 p-4 rounded-lg">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold" style={{ color: "#FF6B6B" }}>
-                            Create New {postType === "task" ? "Task" : "Post"}
-                        </h2>
-
-                        {/* Post Type Toggle */}
-                        <div className="flex bg-gray-700 rounded-lg p-1">
-                            <button
-                                onClick={() => setPostType("post")}
-                                className={`px-4 py-2 rounded transition-all ${
-                                    postType === "post"
-                                        ? "bg-[#FF6B6B] text-white"
-                                        : "text-gray-300 hover:text-white"
-                                }`}
-                            >
-                                📝 Post
-                            </button>
-                            <button
-                                onClick={() => setPostType("task")}
-                                className={`px-4 py-2 rounded transition-all ${
-                                    postType === "task"
-                                        ? "bg-[#FF6B6B] text-white"
-                                        : "text-gray-300 hover:text-white"
-                                }`}
-                            >
-                                ✅ Task
-                            </button>
-                        </div>
-                    </div>
+                    <h2 className="text-xl font-bold mb-4" style={{ color: "#FF6B6B" }}>
+                        ✅ Create New Task
+                    </h2>
 
                     {isUserDataLoading && (
                         <div
                             className="p-3 rounded mb-4 text-red-200"
                             style={{ backgroundColor: "#FF6B6B" }}
                         >
-                            Loading user data... You can still create {postType}s!
+                            Loading user data... You can still create tasks!
                         </div>
                     )}
 
-                    <form onSubmit={handleCreatePost} className="space-y-3">
+                    <form onSubmit={handleCreateTask} className="space-y-3">
                         <input
                             type="text"
-                            placeholder={`${postType === "task" ? "Task" : "Post"} title...`}
-                            value={postType === "task" ? newTask.title : newPost.title}
-                            onChange={(e) => {
-                                if (postType === "task") {
-                                    setNewTask({ ...newTask, title: e.target.value });
-                                } else {
-                                    setNewPost({ ...newPost, title: e.target.value });
-                                }
-                            }}
+                            placeholder="Task title..."
+                            value={newTask.title}
+                            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
                             className="w-full p-3 bg-gray-700 text-white rounded"
                             required
                             disabled={isSubmitting}
                         />
 
                         <textarea
-                            placeholder={postType === "task" ? "Task description..." : "What's on your mind?"}
-                            value={postType === "task" ? newTask.content : newPost.content}
-                            onChange={(e) => {
-                                if (postType === "task") {
-                                    setNewTask({ ...newTask, content: e.target.value });
-                                } else {
-                                    setNewPost({ ...newPost, content: e.target.value });
-                                }
-                            }}
+                            placeholder="Task description..."
+                            value={newTask.content}
+                            onChange={(e) => setNewTask({ ...newTask, content: e.target.value })}
                             className="w-full p-3 bg-gray-700 text-white rounded h-24 resize-none"
                             required
                             disabled={isSubmitting}
                         />
 
-                        {postType === "task" && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                    Deadline
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    value={newTask.deadline}
-                                    onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                                    className="w-full p-3 bg-gray-700 text-white rounded"
-                                    required
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Deadline
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={newTask.deadline}
+                                onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                                className="w-full p-3 bg-gray-700 text-white rounded"
+                                required
+                                disabled={isSubmitting}
+                            />
+                        </div>
 
                         <button
                             type="submit"
@@ -382,50 +335,48 @@ function PostCRUD({ currentUser, currentUserData }) {
                                 (e.currentTarget.style.backgroundColor = "#FF6B6B")
                             }
                         >
-                            {isSubmitting ? "Creating..." : `Create ${postType === "task" ? "Task" : "Post"}`}
+                            {isSubmitting ? "Creating..." : "Create Task"}
                         </button>
                     </form>
                 </div>
             ) : (
                 <div className="bg-gray-800 p-4 rounded-lg text-center">
                     <p className="text-gray-400">
-                        Please log in to create posts and tasks. You can still view and comment on
-                        existing posts!
+                        Please log in to create and manage your tasks.
                     </p>
                 </div>
             )}
 
-            {/* Posts Feed */}
+            {/* Tasks Feed */}
             <div className="space-y-4">
-                {posts.length > 0 ? (
-                    posts.map((post) => {
-                        const isTask = post.type === "task";
-                        const deadlineStatus = isTask ? getDeadlineStatus(post.deadline) : null;
+                {currentUser ? (
+                    tasks.length > 0 ? (
+                        tasks.map((task) => {
+                            const deadlineStatus = getDeadlineStatus(task.deadline);
 
-                        return (
-                            <div key={post.id} className={`bg-gray-800 p-4 rounded-lg border-l-4 ${
-                                isTask ? (post.isCompleted ? "border-green-500" : "border-yellow-500") : "border-blue-500"
-                            }`}>
-                                {editingPost === post.id ? (
-                                    <div className="space-y-3">
-                                        <input
-                                            type="text"
-                                            value={editForm.title}
-                                            onChange={(e) =>
-                                                setEditForm({ ...editForm, title: e.target.value })
-                                            }
-                                            className="w-full p-2 bg-gray-700 text-white rounded"
-                                            required
-                                        />
-                                        <textarea
-                                            value={editForm.content}
-                                            onChange={(e) =>
-                                                setEditForm({ ...editForm, content: e.target.value })
-                                            }
-                                            className="w-full p-2 bg-gray-700 text-white rounded h-20 resize-none"
-                                            required
-                                        />
-                                        {isTask && (
+                            return (
+                                <div key={task.id} className={`bg-gray-800 p-4 rounded-lg border-l-4 ${
+                                    task.isCompleted ? "border-green-500" : "border-yellow-500"
+                                }`}>
+                                    {editingTask === task.id ? (
+                                        <div className="space-y-3">
+                                            <input
+                                                type="text"
+                                                value={editForm.title}
+                                                onChange={(e) =>
+                                                    setEditForm({ ...editForm, title: e.target.value })
+                                                }
+                                                className="w-full p-2 bg-gray-700 text-white rounded"
+                                                required
+                                            />
+                                            <textarea
+                                                value={editForm.content}
+                                                onChange={(e) =>
+                                                    setEditForm({ ...editForm, content: e.target.value })
+                                                }
+                                                className="w-full p-2 bg-gray-700 text-white rounded h-20 resize-none"
+                                                required
+                                            />
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                                     Deadline
@@ -438,66 +389,64 @@ function PostCRUD({ currentUser, currentUserData }) {
                                                     required
                                                 />
                                             </div>
-                                        )}
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => handleUpdatePost(post.id)}
-                                                className="px-3 py-1 rounded text-sm"
-                                                style={{
-                                                    backgroundColor: "#FF6B6B",
-                                                    color: "white",
-                                                }}
-                                                onMouseEnter={(e) =>
-                                                    (e.currentTarget.style.backgroundColor = "#E55A5A")
-                                                }
-                                                onMouseLeave={(e) =>
-                                                    (e.currentTarget.style.backgroundColor = "#FF6B6B")
-                                                }
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                onClick={() => setEditingPost(null)}
-                                                className="px-3 py-1 rounded text-sm"
-                                                style={{
-                                                    backgroundColor: "#6B7280",
-                                                    color: "white",
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className="flex items-center space-x-3">
-                                                <div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-lg">
-                                                            {isTask ? (post.isCompleted ? "✅" : "⏰") : "📝"}
-                                                        </span>
-                                                        <h3
-                                                            className="font-bold"
-                                                            style={{ color: "#FF6B6B" }}
-                                                        >
-                                                            @{post.authorUsername}
-                                                        </h3>
-                                                        <span className="text-xs bg-gray-700 px-2 py-1 rounded">
-                                                            {isTask ? "Task" : "Post"}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-sm text-gray-400">
-                                                        {post.createdAt
-                                                            ? post.createdAt.toLocaleDateString()
-                                                            : "Unknown date"}
-                                                    </p>
-                                                </div>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleUpdateTask(task.id)}
+                                                    className="px-3 py-1 rounded text-sm"
+                                                    style={{
+                                                        backgroundColor: "#FF6B6B",
+                                                        color: "white",
+                                                    }}
+                                                    onMouseEnter={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = "#E55A5A")
+                                                    }
+                                                    onMouseLeave={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = "#FF6B6B")
+                                                    }
+                                                >
+                                                    Save
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingTask(null)}
+                                                    className="px-3 py-1 rounded text-sm"
+                                                    style={{
+                                                        backgroundColor: "#6B7280",
+                                                        color: "white",
+                                                    }}
+                                                >
+                                                    Cancel
+                                                </button>
                                             </div>
-                                            {currentUser && currentUser.uid === post.authorId && (
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex items-center space-x-3">
+                                                    <div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="text-lg">
+                                                                {task.isCompleted ? "✅" : "⏰"}
+                                                            </span>
+                                                            <h3
+                                                                className="font-bold"
+                                                                style={{ color: "#FF6B6B" }}
+                                                            >
+                                                                @{task.authorUsername}
+                                                            </h3>
+                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded">
+                                                                Task
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-400">
+                                                            {task.createdAt
+                                                                ? task.createdAt.toLocaleDateString()
+                                                                : "Unknown date"}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        onClick={() => handleEditPost(post)}
+                                                        onClick={() => handleEditTask(task)}
                                                         className="px-3 py-1 rounded text-sm"
                                                         style={{
                                                             backgroundColor: "#FF6B6B",
@@ -515,7 +464,7 @@ function PostCRUD({ currentUser, currentUserData }) {
                                                         Edit
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeletePost(post.id)}
+                                                        onClick={() => handleDeleteTask(task.id)}
                                                         className="px-3 py-1 rounded text-sm"
                                                         style={{
                                                             backgroundColor: "#DC2626",
@@ -533,167 +482,169 @@ function PostCRUD({ currentUser, currentUserData }) {
                                                         Delete
                                                     </button>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
 
-                                        <h4 className={`text-lg font-semibold mb-2 ${
-                                            isTask && post.isCompleted ? "line-through text-gray-500" : "text-white"
-                                        }`}>
-                                            {post.title}
-                                        </h4>
+                                            <h4 className={`text-lg font-semibold mb-2 ${
+                                                task.isCompleted ? "line-through text-gray-500" : "text-white"
+                                            }`}>
+                                                {task.title}
+                                            </h4>
 
-                                        <p className={`mb-4 ${
-                                            isTask && post.isCompleted ? "line-through text-gray-500" : "text-gray-200"
-                                        }`}>
-                                            {post.content}
-                                        </p>
+                                            <p className={`mb-4 ${
+                                                task.isCompleted ? "line-through text-gray-500" : "text-gray-200"
+                                            }`}>
+                                                {task.content}
+                                            </p>
 
-                                        {isTask && post.deadline && (
-                                            <div className="mb-4">
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-sm text-gray-400">Deadline:</span>
-                                                    <span
-                                                        className="text-sm font-medium px-2 py-1 rounded"
-                                                        style={{
-                                                            backgroundColor: deadlineStatus?.color + "20",
-                                                            color: deadlineStatus?.color
-                                                        }}
-                                                    >
-                                                        {post.deadline instanceof Date
-                                                            ? post.deadline.toLocaleString()
-                                                            : new Date(post.deadline).toLocaleString()
-                                                        }
-                                                    </span>
-                                                    {deadlineStatus && !post.isCompleted && (
+                                            {task.deadline && (
+                                                <div className="mb-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-sm text-gray-400">Deadline:</span>
                                                         <span
-                                                            className="text-xs px-2 py-1 rounded font-medium"
+                                                            className="text-sm font-medium px-2 py-1 rounded"
                                                             style={{
-                                                                backgroundColor: deadlineStatus.color,
-                                                                color: "white"
+                                                                backgroundColor: deadlineStatus?.color + "20",
+                                                                color: deadlineStatus?.color
                                                             }}
                                                         >
-                                                            {deadlineStatus.text}
+                                                            {task.deadline instanceof Date
+                                                                ? task.deadline.toLocaleString()
+                                                                : new Date(task.deadline).toLocaleString()
+                                                            }
                                                         </span>
+                                                        {deadlineStatus && !task.isCompleted && (
+                                                            <span
+                                                                className="text-xs px-2 py-1 rounded font-medium"
+                                                                style={{
+                                                                    backgroundColor: deadlineStatus.color,
+                                                                    color: "white"
+                                                                }}
+                                                            >
+                                                                {deadlineStatus.text}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {task.isCompleted && task.completedAt && (
+                                                        <div className="text-xs text-green-400 mt-1">
+                                                            ✓ Completed on {new Date(task.completedAt.seconds * 1000).toLocaleString()}
+                                                        </div>
                                                     )}
                                                 </div>
-                                                {post.isCompleted && post.completedAt && (
-                                                    <div className="text-xs text-green-400 mt-1">
-                                                        ✓ Completed on {new Date(post.completedAt.seconds * 1000).toLocaleString()}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                            )}
 
-                                        <div className="flex items-center space-x-4">
-                                            {isTask && currentUser && currentUser.uid === post.authorId && (
+                                            <div className="flex items-center space-x-4">
                                                 <button
-                                                    onClick={() => handleToggleTaskCompletion(post.id)}
+                                                    onClick={() => handleToggleTaskCompletion(task.id)}
                                                     className={`flex items-center space-x-2 px-3 py-1 rounded font-medium`}
                                                     style={{
-                                                        backgroundColor: post.isCompleted ? "#10B981" : "#F59E0B",
+                                                        backgroundColor: task.isCompleted ? "#10B981" : "#F59E0B",
                                                         color: "white",
                                                     }}
                                                     onMouseEnter={(e) => {
                                                         e.currentTarget.style.backgroundColor =
-                                                            post.isCompleted ? "#059669" : "#D97706";
+                                                            task.isCompleted ? "#059669" : "#D97706";
                                                     }}
                                                     onMouseLeave={(e) => {
                                                         e.currentTarget.style.backgroundColor =
-                                                            post.isCompleted ? "#10B981" : "#F59E0B";
+                                                            task.isCompleted ? "#10B981" : "#F59E0B";
                                                     }}
                                                 >
-                                                    <span>{post.isCompleted ? "✓" : "○"}</span>
-                                                    <span>{post.isCompleted ? "Completed" : "Mark Complete"}</span>
+                                                    <span>{task.isCompleted ? "✓" : "○"}</span>
+                                                    <span>{task.isCompleted ? "Completed" : "Mark Complete"}</span>
                                                 </button>
-                                            )}
 
-                                            <button
-                                                onClick={() => handleLikePost(post.id)}
-                                                className={`flex items-center space-x-2 px-3 py-1 rounded`}
-                                                style={{
-                                                    backgroundColor:
-                                                        currentUser && post.likes?.includes(currentUser.uid)
-                                                            ? "#FF6B6B"
-                                                            : "#4B5563",
-                                                    color:
-                                                        currentUser && post.likes?.includes(currentUser.uid)
-                                                            ? "white"
-                                                            : "#D1D5DB",
-                                                }}
-                                                disabled={!currentUser}
-                                                onMouseEnter={(e) => {
-                                                    if (
-                                                        currentUser &&
-                                                        post.likes?.includes(currentUser.uid)
-                                                    ) {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            "#E55A5A";
-                                                    } else {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            "#6B7280";
+                                                <button
+                                                    onClick={() => handleLikeTask(task.id)}
+                                                    className={`flex items-center space-x-2 px-3 py-1 rounded`}
+                                                    style={{
+                                                        backgroundColor:
+                                                            currentUser && task.likes?.includes(currentUser.uid)
+                                                                ? "#FF6B6B"
+                                                                : "#4B5563",
+                                                        color:
+                                                            currentUser && task.likes?.includes(currentUser.uid)
+                                                                ? "white"
+                                                                : "#D1D5DB",
+                                                    }}
+                                                    disabled={!currentUser}
+                                                    onMouseEnter={(e) => {
+                                                        if (
+                                                            currentUser &&
+                                                            task.likes?.includes(currentUser.uid)
+                                                        ) {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                "#E55A5A";
+                                                        } else {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                "#6B7280";
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        if (
+                                                            currentUser &&
+                                                            task.likes?.includes(currentUser.uid)
+                                                        ) {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                "#FF6B6B";
+                                                        } else {
+                                                            e.currentTarget.style.backgroundColor =
+                                                                "#4B5563";
+                                                        }
+                                                    }}
+                                                >
+                                                    <span>❤️</span>
+                                                    <span>{task.likeCount || 0}</span>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => toggleComments(task.id)}
+                                                    className="flex items-center space-x-2 px-3 py-1 rounded text-white"
+                                                    style={{ backgroundColor: "#FF6B6B" }}
+                                                    onMouseEnter={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = "#E55A5A")
                                                     }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    if (
-                                                        currentUser &&
-                                                        post.likes?.includes(currentUser.uid)
-                                                    ) {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            "#FF6B6B";
-                                                    } else {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            "#4B5563";
+                                                    onMouseLeave={(e) =>
+                                                        (e.currentTarget.style.backgroundColor = "#FF6B6B")
                                                     }
-                                                }}
-                                            >
-                                                <span>❤️</span>
-                                                <span>{post.likeCount || 0}</span>
-                                            </button>
+                                                >
+                                                    <span>
+                                                        {expandedComments.has(task.id)
+                                                            ? "Hide Comments"
+                                                            : "Show Comments"}
+                                                    </span>
+                                                </button>
 
-                                            <button
-                                                onClick={() => toggleComments(post.id)}
-                                                className="flex items-center space-x-2 px-3 py-1 rounded text-white"
-                                                style={{ backgroundColor: "#FF6B6B" }}
-                                                onMouseEnter={(e) =>
-                                                    (e.currentTarget.style.backgroundColor = "#E55A5A")
-                                                }
-                                                onMouseLeave={(e) =>
-                                                    (e.currentTarget.style.backgroundColor = "#FF6B6B")
-                                                }
-                                            >
-                                                <span>
-                                                    {expandedComments.has(post.id)
-                                                        ? "Hide Comments"
-                                                        : "Show Comments"}
-                                                </span>
-                                            </button>
+                                                {task.updatedAt && (
+                                                    <span className="text-xs text-gray-500">
+                                                        (edited{" "}
+                                                        {task.updatedAt.toDate
+                                                            ? task.updatedAt.toDate().toLocaleString()
+                                                            : "Unknown"}
+                                                        )
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                            {post.updatedAt && (
-                                                <span className="text-xs text-gray-500">
-                                                    (edited{" "}
-                                                    {post.updatedAt.toDate
-                                                        ? post.updatedAt.toDate().toLocaleString()
-                                                        : "Unknown"}
-                                                    )
-                                                </span>
+                                            {expandedComments.has(task.id) && (
+                                                <CommentCRUD
+                                                    currentUser={currentUser}
+                                                    currentUserData={currentUserData}
+                                                    postId={task.id}
+                                                />
                                             )}
-                                        </div>
-
-                                        {expandedComments.has(post.id) && (
-                                            <CommentCRUD
-                                                currentUser={currentUser}
-                                                currentUserData={currentUserData}
-                                                postId={post.id}
-                                            />
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        );
-                    })
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="text-center text-gray-400 py-8">
+                            No tasks yet. Create your first task to get started!
+                        </div>
+                    )
                 ) : (
                     <div className="text-center text-gray-400 py-8">
-                        No posts or tasks yet. Be the first to share something!
+                        Please log in to view and manage your tasks.
                     </div>
                 )}
             </div>
@@ -701,4 +652,4 @@ function PostCRUD({ currentUser, currentUserData }) {
     );
 }
 
-export default PostCRUD;
+export default TaskCRUD;

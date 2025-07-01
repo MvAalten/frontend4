@@ -134,12 +134,8 @@ function GymTok() {
             <div className="fixed top-32 w-full z-40 bg-[#1E1E1E] p-2 flex justify-center border-b border-[#B9CFD4]/30">
                 <div className="flex space-x-2 max-w-full overflow-x-visible no-scrollbar">
                     {[
-                        { label: "Posts", tab: "posts" },
-                        { label: "Challenges", tab: "challenges" },
-                        { label: "Friends", tab: "friends", auth: true },
-                        { label: "Privacy", tab: "privacy", auth: true },
-                        { label: "Athletes", tab: "users" },
-                        { label: "Reports", tab: "reports" },
+                        { label: "Agenda", tab: "posts" },
+                        { label: "Quotes", tab: "challenges" }
                     ].map(({ label, tab, auth }) => {
                         if (auth && !currentUser) return null;
                         return (
