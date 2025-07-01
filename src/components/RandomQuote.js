@@ -13,9 +13,9 @@ function RandomQuote() {
     // Quote categories
     const categories = [
         { value: 'all', label: 'All Quotes' },
-        { value: 'motivational', label: 'Motivational' },
-        { value: 'fitness', label: 'Fitness' },
-        { value: 'inspirational', label: 'Inspirational' }
+        { value: 'Influencers', label: 'Influencers' },
+        { value: 'Games', label: 'Games' },
+        { value: 'Philosophical', label: 'Philosophical' }
     ];
 
     useEffect(() => {

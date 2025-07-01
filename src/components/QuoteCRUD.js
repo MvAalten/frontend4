@@ -26,14 +26,14 @@ function QuoteCRUD({ currentUser }) {
     const [formData, setFormData] = useState({
         text: '',
         author: '',
-        category: 'motivational'
+        category: 'Influencers'
     });
 
     const categories = [
         { value: 'all', label: 'All Categories' },
-        { value: 'motivational', label: 'Motivational' },
-        { value: 'fitness', label: 'Fitness' },
-        { value: 'inspirational', label: 'Inspirational' }
+        { value: 'Influencers', label: 'Influencers' },
+        { value: 'Games', label: 'Games' },
+        { value: 'Philosophical', label: 'Philosophical' }
     ];
 
     useEffect(() => {
@@ -122,7 +122,7 @@ function QuoteCRUD({ currentUser }) {
             setFormData({
                 text: '',
                 author: '',
-                category: 'motivational'
+                category: 'Influencers'
             });
             setShowForm(false);
             setEditingQuote(null);
@@ -145,7 +145,7 @@ function QuoteCRUD({ currentUser }) {
         setFormData({
             text: quote.text || '',
             author: quote.author || '',
-            category: quote.category || 'motivational'
+            category: quote.category || 'Influencers'
         });
         setShowForm(true);
     };
@@ -172,7 +172,7 @@ function QuoteCRUD({ currentUser }) {
         setFormData({
             text: '',
             author: '',
-            category: 'motivational'
+            category: 'Influencers'
         });
         setEditingQuote(null);
         setShowForm(false);
