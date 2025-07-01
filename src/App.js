@@ -7,10 +7,11 @@ import UpdateProfile from "./components/UpdateProfile";
 import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
 import ReportCRUD from "./components/ReportCRUD";
-import RandomChallenge from "./components/RandomChallenge";
+import RandomQuote from "./components/RandomQuote";
 import SearchHeader from "./components/SearchHeader";
 import PrivacySettings from "./components/PrivacySettings";
 import FriendsManager from "./components/FriendsManager";
+import QuoteCRUD from "./components/QuoteCRUD";
 
 // Firebase config
 const firebaseConfig = {
@@ -134,8 +135,9 @@ function GymTok() {
             <div className="fixed top-32 w-full z-40 bg-[#1E1E1E] p-2 flex justify-center border-b border-[#B9CFD4]/30">
                 <div className="flex space-x-2 max-w-full overflow-x-visible no-scrollbar">
                     {[
+                        { label: "Manage Quotes", tab: "manage-quotes", auth: true },
                         { label: "Agenda", tab: "posts" },
-                        { label: "Quotes", tab: "challenges" }
+                        { label: "Quotes", tab: "quotes" }
                     ].map(({ label, tab, auth }) => {
                         if (auth && !currentUser) return null;
                         return (
@@ -156,10 +158,13 @@ function GymTok() {
             </div>
 
             <div className="pt-32 px-4 pb-6 max-w-6xl mx-auto relative z-10">
+                {activeTab === "manage-quotes" && (
+                    <QuoteCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                )}
                 {activeTab === "posts" && (
                     <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
                 )}
-                {activeTab === "challenges" && <RandomChallenge />}
+                {activeTab === "quotes" && <RandomQuote />}
                 {activeTab === "friends" && (
                     <FriendsManager currentUser={currentUser} currentUserData={currentUserData} />
                 )}
