@@ -157,7 +157,7 @@ function GymTok() {
                 </div>
             </div>
 
-            <div className="pt-32 px-4 pb-6 max-w-6xl mx-auto relative z-10">
+            <div className="pt-32 px-4 pb-6 max-w-6xl mx-auto relative z-10 m-7">
                 {activeTab === "manage-quotes" && (
                     <QuoteCRUD currentUser={currentUser} currentUserData={currentUserData} />
                 )}
