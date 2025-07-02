@@ -8,7 +8,6 @@ import UserCRUD from "./components/UserCRUD";
 import PostCRUD from "./components/PostCRUD";
 import ReportCRUD from "./components/ReportCRUD";
 import RandomQuote from "./components/RandomQuote";
-import SearchHeader from "./components/SearchHeader";
 import PrivacySettings from "./components/PrivacySettings";
 import FriendsManager from "./components/FriendsManager";
 import QuoteCRUD from "./components/QuoteCRUD";
@@ -92,12 +91,13 @@ function GymTok() {
 
     if (loading) {
         return (
-            <div className="h-screen bg-[#1E1E1E] flex items-center justify-center">
+            <div className="h-screen bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#FF6B6B] border-t-transparent mx-auto mb-4"></div>
-                    <div className="text-[#F5F7FA] text-2xl font-bold tracking-wide animate-pulse">
-                        Loading GymTok...
+                    <div className="animate-spin rounded-full h-20 w-20 border-4 border-sky-400 border-t-transparent mx-auto mb-6 shadow-lg"></div>
+                    <div className="text-slate-700 text-3xl font-bold tracking-wide animate-pulse drop-shadow-sm">
+                        Loading Motivated...
                     </div>
+                    <div className="mt-2 text-sky-600 text-lg">Get ready to be inspired! ✨</div>
                 </div>
             </div>
         );
@@ -105,89 +105,158 @@ function GymTok() {
 
     if (showLogin && !currentUser) {
         return (
-            <div className="min-h-screen bg-[#1E1E1E] text-[#F5F7FA] p-6">
-                <button
-                    onClick={() => setShowLogin(false)}
-                    className="mb-4 bg-[#FF6B6B] text-white px-6 py-3 rounded-xl font-semibold hover:brightness-110 transform hover:scale-105 transition-all duration-200 shadow-lg"
-                >
-                    ← Back to GymTok
-                </button>
-                <Login onLoginSuccess={() => setShowLogin(false)} />
+            <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-sky-100 to-blue-200 p-6">
+                <div className="max-w-md mx-auto">
+                    <button
+                        onClick={() => setShowLogin(false)}
+                        className="mb-6 bg-gradient-to-r from-sky-400 to-blue-500 text-white px-8 py-4 rounded-full font-bold hover:from-sky-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
+                    >
+                        ← Back to Motivated
+                    </button>
+                    <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-2xl border border-sky-200">
+                        <Login onLoginSuccess={() => setShowLogin(false)} />
+                    </div>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#1E1E1E] text-[#F5F7FA] relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50 to-blue-100 text-slate-700 relative overflow-hidden">
+            {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-4 -left-4 w-72 h-72 bg-[#B9CFD4]/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute top-1/3 -right-8 w-96 h-96 bg-[#FF6B6B]/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                <div className="absolute -bottom-8 left-1/3 w-80 h-80 bg-[#B9CFD4]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+                <div className="absolute -top-10 -left-10 w-96 h-96 bg-gradient-to-br from-sky-200/40 to-blue-300/30 rounded-full blur-3xl animate-float"></div>
+                <div className="absolute top-1/4 -right-12 w-80 h-80 bg-gradient-to-bl from-cyan-200/30 to-sky-300/40 rounded-full blur-3xl animate-float-delayed"></div>
+                <div className="absolute -bottom-12 left-1/4 w-72 h-72 bg-gradient-to-tr from-indigo-200/30 to-blue-200/40 rounded-full blur-3xl animate-float-slow"></div>
+                <div className="absolute top-1/2 left-1/2 w-60 h-60 bg-gradient-to-r from-slate-200/20 to-sky-200/30 rounded-full blur-3xl animate-pulse"></div>
             </div>
 
-            <SearchHeader
-                currentUser={currentUser}
-                currentUserData={currentUserData}
-                onSignOut={handleSignOut}
-                onShowLogin={handleShowLogin}
-            />
-
-            <div className="fixed top-32 w-full z-40 bg-[#1E1E1E] p-2 flex justify-center border-b border-[#B9CFD4]/30">
-                <div className="flex space-x-2 max-w-full overflow-x-visible no-scrollbar">
-                    {[
-                        { label: "Manage Quotes", tab: "manage-quotes", auth: true },
-                        { label: "Agenda", tab: "posts" },
-                        { label: "Quotes", tab: "quotes" }
-                    ].map(({ label, tab, auth }) => {
-                        if (auth && !currentUser) return null;
-                        return (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`px-6 py-3 rounded-xl whitespace-nowrap font-semibold transition-all duration-300 transform hover:scale-105 ${
-                                    activeTab === tab
-                                        ? "bg-[#FF6B6B] text-white shadow-lg"
-                                        : "bg-[#40434E] text-[#F5F7FA] hover:bg-[#FF6B6B]/80 hover:text-white"
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        );
-                    })}
+            {/* Top Welcome Section */}
+            <div className="relative z-10 text-center py-16">
+                <h1 className="text-7xl font-extrabold bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent drop-shadow-lg mb-6 tracking-tight">
+                    ✨ Motivated 💫
+                </h1>
+                <p className="text-2xl text-slate-600 font-medium mb-4">
+                    Your inspiring journey starts here
+                </p>
+                <div className="flex justify-center space-x-2 text-3xl animate-bounce">
+                    <span>🌟</span>
+                    <span>💪</span>
+                    <span>🚀</span>
+                    <span>✨</span>
                 </div>
-            </div>
 
-            <div className="pt-32 px-4 pb-6 max-w-6xl mx-auto relative z-10 m-7">
-                {activeTab === "manage-quotes" && (
-                    <QuoteCRUD currentUser={currentUser} currentUserData={currentUserData} />
-                )}
-                {activeTab === "posts" && (
-                    <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
-                )}
-                {activeTab === "quotes" && <RandomQuote />}
-                {activeTab === "friends" && (
-                    <FriendsManager currentUser={currentUser} currentUserData={currentUserData} />
-                )}
-                {activeTab === "privacy" && (
-                    <PrivacySettings currentUser={currentUser} currentUserData={currentUserData} />
-                )}
-                {activeTab === "users" && <UserCRUD currentUser={currentUser} />}
-                {activeTab === "reports" && (
-                    <div className="fixed inset-0 flex justify-center items-center bg-[#1E1E1E] z-20 px-4">
-                        <div className="max-w-full w-auto">
-                            <ReportCRUD currentUser={currentUser} currentUserData={currentUserData} />
-                        </div>
+                {/* User Info Section */}
+                {currentUser && (
+                    <div className="mt-8 bg-white/70 backdrop-blur-lg rounded-3xl p-6 max-w-lg mx-auto border border-sky-200 shadow-xl">
+                        <p className="text-xl font-bold text-slate-700 mb-2">
+                            Welcome back, {currentUserData?.username || currentUser.email}! 🎉
+                        </p>
+                        <p className="text-sky-600 mb-4">Ready to achieve your goals today?</p>
+                        <button
+                            onClick={handleSignOut}
+                            className="bg-gradient-to-r from-slate-400 to-slate-500 text-white px-6 py-3 rounded-full hover:from-slate-500 hover:to-slate-600 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+                        >
+                            Sign Out
+                        </button>
                     </div>
                 )}
             </div>
 
+            {/* Navigation Tabs - Fixed scrolling issue */}
+            <div className="relative z-40 mx-4 mb-8">
+                <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-6 border border-sky-200 shadow-2xl">
+                    <div className="flex justify-center">
+                        <div className="flex space-x-4 flex-wrap justify-center gap-y-4">
+                            {[
+                                {
+                                    label: "📝 Manage Quotes",
+                                    tab: "manage-quotes",
+                                    auth: true,
+                                    colors: "from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600"
+                                },
+                                {
+                                    label: "📋 Agenda",
+                                    tab: "posts",
+                                    colors: "from-cyan-400 to-sky-500 hover:from-cyan-500 hover:to-sky-600"
+                                },
+                                {
+                                    label: "💭 Quotes",
+                                    tab: "quotes",
+                                    colors: "from-indigo-400 to-blue-500 hover:from-indigo-500 hover:to-blue-600"
+                                }
+                            ].map(({ label, tab, auth, colors }) => {
+                                if (auth && !currentUser) return null;
+                                return (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`px-8 py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                                            activeTab === tab
+                                                ? `bg-gradient-to-r ${colors} text-white ring-4 ring-sky-200`
+                                                : "bg-white/80 text-slate-700 hover:bg-white border border-sky-200 hover:border-sky-300"
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="px-6 pb-12 max-w-6xl mx-auto relative z-10">
+                <div className="bg-white/60 backdrop-blur-lg rounded-3xl p-8 border border-sky-200 shadow-2xl">
+                    {activeTab === "manage-quotes" && (
+                        <div className="text-slate-700">
+                            <QuoteCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                        </div>
+                    )}
+                    {activeTab === "posts" && (
+                        <div className="text-slate-700">
+                            <PostCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                        </div>
+                    )}
+                    {activeTab === "quotes" && (
+                        <div className="text-slate-700">
+                            <RandomQuote />
+                        </div>
+                    )}
+                    {activeTab === "friends" && (
+                        <div className="text-slate-700">
+                            <FriendsManager currentUser={currentUser} currentUserData={currentUserData} />
+                        </div>
+                    )}
+                    {activeTab === "privacy" && (
+                        <div className="text-slate-700">
+                            <PrivacySettings currentUser={currentUser} currentUserData={currentUserData} />
+                        </div>
+                    )}
+                    {activeTab === "users" && (
+                        <div className="text-slate-700">
+                            <UserCRUD currentUser={currentUser} />
+                        </div>
+                    )}
+                    {activeTab === "reports" && (
+                        <div className="fixed inset-0 flex justify-center items-center bg-slate-900/20 backdrop-blur-lg z-50 px-4">
+                            <div className="max-w-full w-auto bg-white/80 rounded-3xl p-8 border border-sky-200 shadow-2xl">
+                                <ReportCRUD currentUser={currentUser} currentUserData={currentUserData} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Floating Action Buttons */}
             {!currentUser && (
                 <div className="fixed bottom-8 right-8 z-50">
                     <button
                         onClick={handleShowLogin}
-                        className="bg-[#FF6B6B] hover:brightness-110 text-white px-8 py-4 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300 animate-pulse"
+                        className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-12 py-6 rounded-full shadow-2xl text-xl font-bold transform hover:scale-110 transition-all duration-300 ring-4 ring-sky-200 hover:ring-sky-300"
                     >
-                        Join GymTok
+                        🌟 Join Motivated
                     </button>
                 </div>
             )}
@@ -196,32 +265,59 @@ function GymTok() {
                 <>
                     <button
                         onClick={() => setShowUpdateProfile((prev) => !prev)}
-                        className="fixed bottom-8 right-8 z-50 bg-[#FF6B6B] hover:brightness-110 text-white px-6 py-3 rounded-full shadow-md text-base font-semibold transform hover:scale-105 transition-all duration-200
-"
+                        className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-indigo-400 to-blue-500 hover:from-indigo-500 hover:to-blue-600 text-white px-8 py-4 rounded-full shadow-2xl text-lg font-bold transform hover:scale-110 transition-all duration-300 ring-4 ring-indigo-200"
                         aria-label={showUpdateProfile ? "Close Profile" : "Open Profile"}
                     >
-                        {showUpdateProfile ? "Close" : "Update Profile"}
+                        {showUpdateProfile ? "❌ Close" : "⚙️ Profile"}
                     </button>
 
                     {showUpdateProfile && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
+                        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex justify-center items-center z-50 px-4">
                             <div
                                 ref={modalRef}
-                                className="bg-[#40434E]/90 backdrop-blur-xl border border-[#B9CFD4]/30 p-6 rounded-2xl max-w-sm shadow-2xl relative"
+                                className="bg-white/90 backdrop-blur-xl border border-sky-200 p-8 rounded-3xl max-w-md shadow-2xl relative"
                             >
                                 <button
                                     onClick={() => setShowUpdateProfile(false)}
-                                    className="absolute top-3 right-3 text-white text-xl font-bold hover:text-red-400"
+                                    className="absolute top-4 right-4 text-slate-600 text-2xl font-bold hover:text-slate-800 bg-sky-100 hover:bg-sky-200 w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200"
                                     aria-label="Close profile popup"
                                 >
                                     ×
                                 </button>
-                                <UpdateProfile />
+                                <div className="text-slate-700">
+                                    <UpdateProfile />
+                                </div>
                             </div>
                         </div>
                     )}
                 </>
             )}
+
+            <style jsx>{`
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(5deg); }
+                }
+                @keyframes float-delayed {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-15px) rotate(-3deg); }
+                }
+                @keyframes float-slow {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-10px) rotate(2deg); }
+                }
+                .animate-float {
+                    animation: float 6s ease-in-out infinite;
+                }
+                .animate-float-delayed {
+                    animation: float-delayed 8s ease-in-out infinite;
+                    animation-delay: -2s;
+                }
+                .animate-float-slow {
+                    animation: float-slow 10s ease-in-out infinite;
+                    animation-delay: -4s;
+                }
+            `}</style>
         </div>
     );
 }

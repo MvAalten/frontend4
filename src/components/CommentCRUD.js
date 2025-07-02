@@ -135,54 +135,72 @@ function CommentCRUD({ currentUser, postId, currentUserData }) {
 
     if (!postId) {
         return (
-            <div className="text-gray-400 p-4 bg-[#FF6B6B] rounded">
-                Error: No post ID provided for comments
+            <div className="bg-gradient-to-r from-red-400 to-red-500 text-white p-6 rounded-3xl border border-red-300 shadow-xl">
+                <div className="text-center">
+                    <span className="text-2xl">⚠️</span>
+                    <p className="font-bold mt-2">Error: No post ID provided for comments</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4 mt-4 border-t border-gray-700 pt-4">
-            <h4 className="text-lg font-semibold text-[#FF6B6B]">
-                Comments ({comments.length})
+        <div className="space-y-6 mt-8 pt-8 border-t border-sky-200">
+            <h4 className="text-2xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent flex items-center gap-2">
+                💬 Comments ({comments.length})
             </h4>
 
-            <form onSubmit={handleCreateComment} className="flex space-x-2">
+            <form onSubmit={handleCreateComment} className="flex gap-4">
                 <input
                     type="text"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder={currentUser ? "Write a comment..." : "Write a comment as Anonymous..."}
                     disabled={loading}
-                    className="flex-1 p-2 bg-gray-700 text-white rounded text-sm placeholder-gray-400"
+                    className="flex-1 p-4 bg-white/70 backdrop-blur-lg text-slate-700 rounded-2xl border border-sky-200 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-300 focus:border-sky-400 transition-all duration-300 shadow-lg"
                 />
                 <button
                     type="submit"
                     disabled={loading || !newComment.trim()}
-                    className="bg-[#FF6B6B] hover:bg-[#e05a5a] disabled:bg-gray-600 px-3 py-2 rounded text-sm font-semibold"
+                    className="bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 disabled:from-slate-300 disabled:to-slate-400 px-8 py-4 rounded-2xl font-bold text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed"
                 >
-                    {loading ? "Posting..." : "Send"}
+                    {loading ? (
+                        <div className="flex items-center gap-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            Posting...
+                        </div>
+                    ) : (
+                        "✨ Send"
+                    )}
                 </button>
             </form>
 
             {!currentUser && (
-                <div className="text-xs text-gray-500 bg-gray-800 p-2 rounded">
-                    You're posting anonymously. Log in to like comments and have a username.
+                <div className="bg-gradient-to-r from-cyan-50 to-sky-50 p-4 rounded-2xl border border-sky-200 shadow-lg">
+                    <div className="flex items-center gap-2 text-sky-700">
+                        <span className="text-lg">👤</span>
+                        <p className="font-medium">You're posting anonymously. Log in to like comments and have a username.</p>
+                    </div>
                 </div>
             )}
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
                 {comments.length > 0 ? (
                     comments.map((comment) => (
-                        <div key={comment.id} className="p-3 bg-gray-800 rounded">
-                            <div className="flex justify-between items-start mb-2">
+                        <div
+                            key={comment.id}
+                            className="bg-white/70 backdrop-blur-lg p-6 rounded-3xl border border-sky-200 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
+                        >
+                            <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <span className={`text-sm font-medium ${
-                                        comment.isAnonymous ? 'text-gray-400' : 'text-[#FF6B6B]'
+                                    <span className={`font-bold text-lg ${
+                                        comment.isAnonymous
+                                            ? 'text-slate-500'
+                                            : 'bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent'
                                     }`}>
-                                        @{comment.authorUsername}
+                                        {comment.isAnonymous ? '👤' : '🌟'} @{comment.authorUsername}
                                     </span>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-slate-500 text-sm mt-1">
                                         {comment.createdAt instanceof Date
                                             ? comment.createdAt.toLocaleString()
                                             : 'Just now'
@@ -193,26 +211,28 @@ function CommentCRUD({ currentUser, postId, currentUserData }) {
                                 <button
                                     onClick={() => handleLike(comment.id)}
                                     disabled={!currentUser}
-                                    className={`text-xs px-2 py-1 rounded flex items-center space-x-1 transition-colors ${
+                                    className={`px-4 py-2 rounded-full flex items-center gap-2 font-bold transition-all duration-300 transform hover:scale-110 ${
                                         currentUser && comment.likes?.includes(currentUser.uid)
-                                            ? "bg-[#FF6B6B] text-white"
+                                            ? "bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg"
                                             : currentUser
-                                                ? "bg-gray-600 text-gray-300 hover:bg-gray-500"
-                                                : "bg-gray-700 text-gray-400 cursor-not-allowed"
+                                                ? "bg-white/80 text-slate-600 hover:bg-gradient-to-r hover:from-red-400 hover:to-pink-500 hover:text-white border border-sky-200 shadow-lg"
+                                                : "bg-slate-200 text-slate-400 cursor-not-allowed"
                                     }`}
                                     title={!currentUser ? "Log in to like comments" : ""}
                                 >
-                                    <span>❤️</span>
+                                    <span className="text-lg">❤️</span>
                                     <span>{comment.likeCount || 0}</span>
                                 </button>
                             </div>
 
-                            <p className="text-white text-sm">{comment.content}</p>
+                            <p className="text-slate-700 text-lg leading-relaxed">{comment.content}</p>
                         </div>
                     ))
                 ) : (
-                    <div className="text-center text-gray-400 py-4">
-                        No comments yet. Be the first to comment!
+                    <div className="text-center py-12 bg-gradient-to-r from-slate-50 to-sky-50 rounded-3xl border border-sky-200 shadow-lg">
+                        <div className="text-6xl mb-4">💭</div>
+                        <p className="text-slate-500 text-xl font-medium mb-2">No comments yet</p>
+                        <p className="text-sky-600 text-lg">Be the first to share your thoughts! ✨</p>
                     </div>
                 )}
             </div>

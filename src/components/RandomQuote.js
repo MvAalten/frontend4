@@ -12,10 +12,10 @@ function RandomQuote() {
 
     // Quote categories
     const categories = [
-        { value: 'all', label: 'All Quotes' },
-        { value: 'Influencers', label: 'Influencers' },
-        { value: 'Games', label: 'Games' },
-        { value: 'Philosophical', label: 'Philosophical' }
+        { value: 'all', label: '✨ All Quotes', emoji: '✨' },
+        { value: 'Influencers', label: '🌟 Influencers', emoji: '🌟' },
+        { value: 'Games', label: '🎮 Games', emoji: '🎮' },
+        { value: 'Philosophical', label: '🧠 Philosophical', emoji: '🧠' }
     ];
 
     useEffect(() => {
@@ -98,52 +98,26 @@ function RandomQuote() {
 
     if (error) {
         return (
-            <div
-                style={{
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '1rem'
-                }}
-            >
-                <div
-                    style={{
-                        maxWidth: '28rem',
-                        width: '100%',
-                        padding: '1.5rem',
-                        backgroundColor: '#40434E',
-                        border: '1px solid #B9CFD4',
-                        borderRadius: '0.5rem',
-                        color: '#F5F7FA'
-                    }}
-                >
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem', color: '#FF6B6B' }}>
-                        Error
+            <div className="text-center py-12">
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 backdrop-blur-lg rounded-3xl p-8 border border-red-200 shadow-xl max-w-2xl mx-auto">
+                    <div className="text-6xl mb-4">😔</div>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                        Oops! Something went wrong
                     </h2>
-                    <p style={{ marginBottom: '1rem' }}>{error}</p>
+                    <p className="text-slate-600 text-lg mb-6">{error}</p>
                     <button
                         onClick={refreshQuotes}
-                        style={{
-                            backgroundColor: '#FF6B6B',
-                            color: '#F5F7FA',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '0.375rem',
-                            fontWeight: '600',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e85a5a')}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF6B6B')}
+                        className="bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600 text-white px-8 py-4 rounded-2xl font-bold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                     >
-                        Try Again
+                        🔄 Try Again
                     </button>
-                    <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: '#B9CFD4' }}>
-                        <p>Debug info:</p>
-                        <p>Quotes loaded: {allQuotes.length}</p>
-                        <p>Current quote: {currentQuote ? 'Yes' : 'No'}</p>
-                        <p>Selected category: {selectedCategory}</p>
+                    <div className="mt-6 p-4 bg-white/70 backdrop-blur-lg rounded-2xl border border-red-200">
+                        <p className="text-sm text-slate-500 mb-2 font-medium">Debug info:</p>
+                        <div className="text-xs text-slate-400 space-y-1">
+                            <p>Quotes loaded: {allQuotes.length}</p>
+                            <p>Current quote: {currentQuote ? 'Yes' : 'No'}</p>
+                            <p>Selected category: {selectedCategory}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -151,217 +125,112 @@ function RandomQuote() {
     }
 
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-            }}
-        >
-            <div
-                style={{
-                    maxWidth: '40rem',
-                    width: '100%',
-                    padding: '1.5rem',
-                    backgroundColor: '#1E1E1E',
-                    border: '1px solid #B9CFD4',
-                    borderRadius: '0.5rem',
-                    color: '#F5F7FA',
-                    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif',
-                    boxSizing: 'border-box',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1.5rem',
-                }}
-            >
-                <h2
-                    style={{
-                        fontSize: '1.75rem',
-                        fontWeight: '700',
-                        margin: 0,
-                        textAlign: 'center',
-                        color: '#FF6B6B',
-                    }}
-                >
-                    Random Quote
+        <div className="space-y-8">
+            <div className="text-center">
+                <h2 className="text-4xl font-bold bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
+                    💭 Random Quote Generator
                 </h2>
+                <p className="text-xl text-slate-600">Discover inspiration from amazing quotes! ✨</p>
+            </div>
 
-                {/* Category Filter */}
-                <div style={{ textAlign: 'center' }}>
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: '0.5rem',
-                            flexWrap: 'wrap',
-                            justifyContent: 'center',
-                            marginBottom: '1rem'
-                        }}
-                    >
-                        {categories.map(category => (
-                            <button
-                                key={category.value}
-                                onClick={() => handleCategoryChange(category.value)}
-                                style={{
-                                    backgroundColor: selectedCategory === category.value ? '#FF6B6B' : '#40434E',
-                                    color: '#F5F7FA',
-                                    padding: '0.5rem 1rem',
-                                    borderRadius: '0.375rem',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontWeight: selectedCategory === category.value ? '700' : '400',
-                                    transition: 'all 0.3s ease',
-                                    fontSize: '0.875rem'
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (selectedCategory !== category.value) {
-                                        e.currentTarget.style.backgroundColor = '#FF6B6B';
-                                        e.currentTarget.style.opacity = '0.8';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (selectedCategory !== category.value) {
-                                        e.currentTarget.style.backgroundColor = '#40434E';
-                                        e.currentTarget.style.opacity = '1';
-                                    }
-                                }}
-                            >
-                                {category.label}
-                            </button>
-                        ))}
-                    </div>
-                    <p style={{ fontSize: '0.875rem', color: '#B9CFD4', margin: 0 }}>
+            {/* Category Filter */}
+            <div className="text-center">
+                <div className="flex gap-3 flex-wrap justify-center mb-4">
+                    {categories.map(category => (
+                        <button
+                            key={category.value}
+                            onClick={() => handleCategoryChange(category.value)}
+                            className={`px-6 py-3 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                                selectedCategory === category.value
+                                    ? 'bg-gradient-to-r from-sky-400 to-blue-500 text-white ring-4 ring-sky-200'
+                                    : 'bg-white/80 backdrop-blur-lg text-slate-700 hover:bg-gradient-to-r hover:from-sky-400 hover:to-blue-500 hover:text-white border border-sky-200'
+                            }`}
+                        >
+                            {category.label}
+                        </button>
+                    ))}
+                </div>
+                <div className="bg-gradient-to-r from-cyan-50 to-sky-50 backdrop-blur-lg p-4 rounded-2xl border border-sky-200 shadow-lg inline-block">
+                    <p className="text-sky-700 font-medium">
                         {selectedCategory === 'all'
-                            ? `All ${allQuotes.length} quotes`
-                            : `${filteredQuotes.length} ${selectedCategory} quotes`
+                            ? `✨ All ${allQuotes.length} quotes available`
+                            : `${categories.find(c => c.value === selectedCategory)?.emoji} ${filteredQuotes.length} ${selectedCategory} quotes available`
                         }
                     </p>
                 </div>
+            </div>
 
-                {/* Quote Display */}
-                <div
-                    style={{
-                        minHeight: '250px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#40434E',
-                        borderRadius: '0.5rem',
-                        padding: '1.5rem',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                    }}
+            {/* Quote Display */}
+            <div className="bg-white/60 backdrop-blur-lg rounded-3xl p-8 border border-sky-200 shadow-2xl min-h-[400px] flex items-center justify-center">
+                {loading ? (
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-sky-400 border-t-transparent mx-auto mb-6 shadow-lg"></div>
+                        <p className="text-2xl font-bold text-sky-600 animate-pulse">Loading inspiration...</p>
+                        <p className="text-slate-500 mt-2">✨ Getting ready to motivate you!</p>
+                    </div>
+                ) : currentQuote ? (
+                    <div className="text-center w-full max-w-4xl">
+                        <div className="bg-gradient-to-br from-sky-50 to-blue-50 backdrop-blur-lg p-8 rounded-3xl border border-sky-200 shadow-xl">
+                            <div className="relative">
+                                <div className="text-6xl text-sky-400 mb-4">"</div>
+                                <blockquote className="text-2xl md:text-3xl font-medium text-slate-700 leading-relaxed mb-6 italic">
+                                    {currentQuote.text || currentQuote.quote}
+                                </blockquote>
+                                <div className="text-6xl text-sky-400 mb-6 rotate-180">"</div>
+                            </div>
+
+                            {currentQuote.author && (
+                                <div className="bg-white/70 backdrop-blur-lg p-4 rounded-2xl border border-sky-200 shadow-lg inline-block mb-4">
+                                    <p className="text-xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                                        — {currentQuote.author}
+                                    </p>
+                                </div>
+                            )}
+
+                            {currentQuote.category && (
+                                <div className="inline-block bg-gradient-to-r from-indigo-400 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                                    {categories.find(c => c.value === currentQuote.category)?.emoji || '✨'} {currentQuote.category}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center">
+                        <div className="text-8xl mb-6">💭</div>
+                        <p className="text-2xl font-bold text-slate-600 mb-4">Ready for some inspiration?</p>
+                        <p className="text-lg text-sky-600 mb-6">Click the button below to discover an amazing quote! ✨</p>
+                        {filteredQuotes.length === 0 && selectedCategory !== 'all' && (
+                            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-2xl border border-yellow-200 shadow-lg">
+                                <p className="text-yellow-700 font-medium">
+                                    🔍 No quotes available for "{selectedCategory}" category
+                                </p>
+                                <p className="text-yellow-600 text-sm mt-1">Try selecting a different category!</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Action Button */}
+            <div className="text-center">
+                <button
+                    onClick={getRandomQuote}
+                    disabled={loading || (selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0}
+                    className={`px-12 py-6 rounded-3xl font-bold text-xl transition-all duration-300 transform shadow-2xl ${
+                        loading || (selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0
+                            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white hover:scale-110 ring-4 ring-sky-200 hover:ring-sky-300'
+                    }`}
                 >
                     {loading ? (
-                        <div style={{ textAlign: 'center', color: '#B9CFD4' }}>
-                            <div
-                                style={{
-                                    borderTop: '4px solid #FF6B6B',
-                                    borderRight: '4px solid transparent',
-                                    borderRadius: '50%',
-                                    width: '48px',
-                                    height: '48px',
-                                    margin: '0 auto 1rem',
-                                    animation: 'spin 1s linear infinite',
-                                }}
-                            />
-                            <p>Loading quote...</p>
-                        </div>
-                    ) : currentQuote ? (
-                        <div
-                            style={{
-                                backgroundColor: '#1E1E1E',
-                                padding: '1.5rem',
-                                borderRadius: '0.5rem',
-                                width: '100%',
-                                color: '#F5F7FA',
-                                textAlign: 'center',
-                                boxShadow: 'inset 0 0 10px rgba(255,107,107,0.5)',
-                            }}
-                        >
-                            <blockquote style={{
-                                fontSize: '1.125rem',
-                                fontStyle: 'italic',
-                                margin: '0 0 1rem 0',
-                                lineHeight: '1.6',
-                                position: 'relative'
-                            }}>
-                                <span style={{ fontSize: '2rem', color: '#FF6B6B', position: 'absolute', top: '-0.5rem', left: '-0.5rem' }}>"</span>
-                                <span style={{ paddingLeft: '1rem' }}>{currentQuote.text || currentQuote.quote}</span>
-                                <span style={{ fontSize: '2rem', color: '#FF6B6B' }}>"</span>
-                            </blockquote>
-                            {currentQuote.author && (
-                                <p style={{
-                                    fontSize: '1rem',
-                                    fontWeight: '600',
-                                    color: '#B9CFD4',
-                                    margin: 0
-                                }}>
-                                    — {currentQuote.author}
-                                </p>
-                            )}
-                            {currentQuote.category && (
-                                <p style={{
-                                    fontSize: '0.875rem',
-                                    color: '#FF6B6B',
-                                    margin: '0.5rem 0 0 0',
-                                    textTransform: 'capitalize'
-                                }}>
-                                    {currentQuote.category}
-                                </p>
-                            )}
+                        <div className="flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                            Loading Magic...
                         </div>
                     ) : (
-                        <div style={{ textAlign: 'center', color: '#B9CFD4' }}>
-                            <p style={{ marginBottom: '1rem' }}>No quote selected</p>
-                            <p style={{ fontSize: '0.875rem' }}>Click "Get Random Quote" to start!</p>
-                            {filteredQuotes.length === 0 && selectedCategory !== 'all' && (
-                                <p style={{ color: '#FF6B6B', marginTop: '0.5rem' }}>
-                                    No quotes available for "{selectedCategory}" category
-                                </p>
-                            )}
-                        </div>
+                        '🎲 Get Random Quote'
                     )}
-                </div>
-
-                {/* Action Button */}
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button
-                        onClick={getRandomQuote}
-                        disabled={loading || (selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0}
-                        style={{
-                            flex: 1,
-                            backgroundColor:
-                                loading || (selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0
-                                    ? '#40434E' : '#FF6B6B',
-                            color: '#F5F7FA',
-                            fontWeight: '600',
-                            padding: '0.75rem',
-                            borderRadius: '0.5rem',
-                            border: 'none',
-                            cursor: loading || (selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0
-                                ? 'not-allowed' : 'pointer',
-                            transition: 'background-color 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            if (!loading && !((selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0))
-                                e.currentTarget.style.backgroundColor = '#e85a5a';
-                        }}
-                        onMouseLeave={(e) => {
-                            if (!loading && !((selectedCategory !== 'all' && filteredQuotes.length === 0) || allQuotes.length === 0))
-                                e.currentTarget.style.backgroundColor = '#FF6B6B';
-                        }}
-                    >
-                        {loading ? 'Loading...' : 'Get Random Quote'}
-                    </button>
-                </div>
-
-                <style>{`
-                    @keyframes spin {
-                        0% { transform: rotate(0deg);}
-                        100% { transform: rotate(360deg);}
-                    }
-                `}</style>
+                </button>
             </div>
         </div>
     );

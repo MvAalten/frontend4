@@ -68,7 +68,7 @@ function TaskCRUD({ currentUser, currentUserData }) {
             }
         );
         return () => unsubscribe();
-    }, [currentUser]); // Re-run when currentUser changes
+    }, [currentUser]);
 
     const handleCreateTask = async (e) => {
         e.preventDefault();
@@ -251,70 +251,70 @@ function TaskCRUD({ currentUser, currentUserData }) {
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
         if (daysDiff < 0) {
-            return { status: "overdue", text: `${Math.abs(daysDiff)} days overdue`, color: "#DC2626" };
+            return { status: "overdue", text: `${Math.abs(daysDiff)} days overdue`, colors: "from-red-500 to-red-600" };
         } else if (daysDiff === 0) {
-            return { status: "today", text: "Due today", color: "#FF6B6B" };
+            return { status: "today", text: "Due today", colors: "from-orange-500 to-red-500" };
         } else if (daysDiff <= 3) {
-            return { status: "soon", text: `Due in ${daysDiff} days`, color: "#F59E0B" };
+            return { status: "soon", text: `Due in ${daysDiff} days`, colors: "from-yellow-500 to-orange-500" };
         } else {
-            return { status: "upcoming", text: `Due in ${daysDiff} days`, color: "#10B981" };
+            return { status: "upcoming", text: `Due in ${daysDiff} days`, colors: "from-green-500 to-emerald-500" };
         }
     };
 
     return (
-        <div className="space-y-6 mt-8">
-            {/* Debug Info */}
-            <div className="bg-gray-900 p-2 rounded text-xs text-gray-400">
-                Debug: User: {currentUser ? "✓" : "✗"} | UserData:{" "}
-                {currentUserData ? "✓" : "✗"} | Tasks: {tasks.length} | Loading:{" "}
-                {isUserDataLoading ? "✓" : "✗"}
-            </div>
-
+        <div className="space-y-8">
             {/* Create Task Form */}
             {currentUser ? (
-                <div className="bg-gray-800 p-4 rounded-lg">
-                    <h2 className="text-xl font-bold mb-4" style={{ color: "#FF6B6B" }}>
-                        ✅ Create New Task
-                    </h2>
+                <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 border border-sky-200 shadow-2xl">
+                    <div className="flex items-center space-x-3 mb-6">
+                        <span className="text-4xl">✅</span>
+                        <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                            Create New Task
+                        </h2>
+                    </div>
 
                     {isUserDataLoading && (
-                        <div
-                            className="p-3 rounded mb-4 text-red-200"
-                            style={{ backgroundColor: "#FF6B6B" }}
-                        >
-                            Loading user data... You can still create tasks!
+                        <div className="bg-gradient-to-r from-sky-400 to-blue-500 text-white p-4 rounded-2xl mb-6 shadow-lg">
+                            <div className="flex items-center space-x-3">
+                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                                <span className="font-medium">Loading user data... You can still create tasks!</span>
+                            </div>
                         </div>
                     )}
 
-                    <form onSubmit={handleCreateTask} className="space-y-3">
-                        <input
-                            type="text"
-                            placeholder="Task title..."
-                            value={newTask.title}
-                            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                            className="w-full p-3 bg-gray-700 text-white rounded"
-                            required
-                            disabled={isSubmitting}
-                        />
+                    <form onSubmit={handleCreateTask} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-slate-700 font-semibold">Task Title</label>
+                            <input
+                                type="text"
+                                placeholder="What do you want to accomplish?"
+                                value={newTask.title}
+                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300"
+                                required
+                                disabled={isSubmitting}
+                            />
+                        </div>
 
-                        <textarea
-                            placeholder="Task description..."
-                            value={newTask.content}
-                            onChange={(e) => setNewTask({ ...newTask, content: e.target.value })}
-                            className="w-full p-3 bg-gray-700 text-white rounded h-24 resize-none"
-                            required
-                            disabled={isSubmitting}
-                        />
+                        <div className="space-y-2">
+                            <label className="text-slate-700 font-semibold">Task Description</label>
+                            <textarea
+                                placeholder="Describe your task in detail..."
+                                value={newTask.content}
+                                onChange={(e) => setNewTask({ ...newTask, content: e.target.value })}
+                                className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300 h-32 resize-none"
+                                required
+                                disabled={isSubmitting}
+                            />
+                        </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Deadline
-                            </label>
+                        <div className="space-y-2">
+                            <label className="text-slate-700 font-semibold">⏰ Deadline</label>
                             <input
                                 type="datetime-local"
                                 value={newTask.deadline}
                                 onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                                className="w-full p-3 bg-gray-700 text-white rounded"
+                                className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300"
                                 required
                                 disabled={isSubmitting}
                             />
@@ -322,329 +322,271 @@ function TaskCRUD({ currentUser, currentUserData }) {
 
                         <button
                             type="submit"
-                            className="px-4 py-2 rounded font-semibold disabled:opacity-50"
-                            style={{
-                                backgroundColor: "#FF6B6B",
-                                color: "white",
-                            }}
+                            className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-8 py-4 rounded-2xl font-bold text-lg transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             disabled={isSubmitting}
-                            onMouseEnter={(e) =>
-                                (e.currentTarget.style.backgroundColor = "#E55A5A")
-                            }
-                            onMouseLeave={(e) =>
-                                (e.currentTarget.style.backgroundColor = "#FF6B6B")
-                            }
                         >
-                            {isSubmitting ? "Creating..." : "Create Task"}
+                            {isSubmitting ? (
+                                <div className="flex items-center justify-center space-x-3">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                                    <span>Creating Task...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center space-x-2">
+                                    <span>✨</span>
+                                    <span>Create Task</span>
+                                    <span>🚀</span>
+                                </div>
+                            )}
                         </button>
                     </form>
                 </div>
             ) : (
-                <div className="bg-gray-800 p-4 rounded-lg text-center">
-                    <p className="text-gray-400">
-                        Please log in to create and manage your tasks.
-                    </p>
+                <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-8 border border-sky-200 shadow-xl text-center">
+                    <div className="text-6xl mb-4">🔐</div>
+                    <h3 className="text-2xl font-bold text-slate-700 mb-2">Login Required</h3>
+                    <p className="text-slate-600">Please log in to create and manage your tasks!</p>
                 </div>
             )}
 
             {/* Tasks Feed */}
-            <div className="space-y-4">
+            <div className="space-y-6">
                 {currentUser ? (
                     tasks.length > 0 ? (
-                        tasks.map((task) => {
-                            const deadlineStatus = getDeadlineStatus(task.deadline);
+                        <div className="space-y-6">
+                            <div className="flex items-center space-x-3 mb-6">
+                                <span className="text-3xl">📋</span>
+                                <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-600 to-slate-700 bg-clip-text text-transparent">
+                                    Your Tasks ({tasks.length})
+                                </h2>
+                            </div>
 
-                            return (
-                                <div key={task.id} className={`bg-gray-800 p-4 rounded-lg border-l-4 ${
-                                    task.isCompleted ? "border-green-500" : "border-yellow-500"
-                                }`}>
-                                    {editingTask === task.id ? (
-                                        <div className="space-y-3">
-                                            <input
-                                                type="text"
-                                                value={editForm.title}
-                                                onChange={(e) =>
-                                                    setEditForm({ ...editForm, title: e.target.value })
-                                                }
-                                                className="w-full p-2 bg-gray-700 text-white rounded"
-                                                required
-                                            />
-                                            <textarea
-                                                value={editForm.content}
-                                                onChange={(e) =>
-                                                    setEditForm({ ...editForm, content: e.target.value })
-                                                }
-                                                className="w-full p-2 bg-gray-700 text-white rounded h-20 resize-none"
-                                                required
-                                            />
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">
-                                                    Deadline
-                                                </label>
+                            {tasks.map((task) => {
+                                const deadlineStatus = getDeadlineStatus(task.deadline);
+
+                                return (
+                                    <div key={task.id} className={`bg-white/80 backdrop-blur-lg rounded-3xl p-6 border-l-8 shadow-xl hover:shadow-2xl transition-all duration-300 ${
+                                        task.isCompleted
+                                            ? "border-green-500 bg-gradient-to-r from-green-50/50 to-emerald-50/50"
+                                            : "border-sky-500 hover:border-blue-500"
+                                    }`}>
+                                        {editingTask === task.id ? (
+                                            <div className="space-y-6">
+                                                <div className="flex items-center space-x-3 mb-4">
+                                                    <span className="text-2xl">✏️</span>
+                                                    <h3 className="text-xl font-bold text-slate-700">Edit Task</h3>
+                                                </div>
+
                                                 <input
-                                                    type="datetime-local"
-                                                    value={editForm.deadline}
-                                                    onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
-                                                    className="w-full p-2 bg-gray-700 text-white rounded"
+                                                    type="text"
+                                                    value={editForm.title}
+                                                    onChange={(e) =>
+                                                        setEditForm({ ...editForm, title: e.target.value })
+                                                    }
+                                                    className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300"
                                                     required
                                                 />
-                                            </div>
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => handleUpdateTask(task.id)}
-                                                    className="px-3 py-1 rounded text-sm"
-                                                    style={{
-                                                        backgroundColor: "#FF6B6B",
-                                                        color: "white",
-                                                    }}
-                                                    onMouseEnter={(e) =>
-                                                        (e.currentTarget.style.backgroundColor = "#E55A5A")
+
+                                                <textarea
+                                                    value={editForm.content}
+                                                    onChange={(e) =>
+                                                        setEditForm({ ...editForm, content: e.target.value })
                                                     }
-                                                    onMouseLeave={(e) =>
-                                                        (e.currentTarget.style.backgroundColor = "#FF6B6B")
-                                                    }
-                                                >
-                                                    Save
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingTask(null)}
-                                                    className="px-3 py-1 rounded text-sm"
-                                                    style={{
-                                                        backgroundColor: "#6B7280",
-                                                        color: "white",
-                                                    }}
-                                                >
-                                                    Cancel
-                                                </button>
+                                                    className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300 h-24 resize-none"
+                                                    required
+                                                />
+
+                                                <div className="space-y-2">
+                                                    <label className="text-slate-700 font-semibold">Deadline</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        value={editForm.deadline}
+                                                        onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
+                                                        className="w-full p-4 bg-white/70 border border-sky-200 rounded-2xl text-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-200 focus:border-sky-300 transition-all duration-300"
+                                                        required
+                                                    />
+                                                </div>
+
+                                                <div className="flex space-x-3">
+                                                    <button
+                                                        onClick={() => handleUpdateTask(task.id)}
+                                                        className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-2xl font-bold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                    >
+                                                        ✅ Save Changes
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingTask(null)}
+                                                        className="flex-1 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white px-6 py-3 rounded-2xl font-bold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                    >
+                                                        ❌ Cancel
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex items-center space-x-3">
-                                                    <div>
-                                                        <div className="flex items-center space-x-2">
-                                                            <span className="text-lg">
+                                        ) : (
+                                            <>
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-center space-x-4">
+                                                        <div className="flex items-center space-x-3">
+                                                            <span className="text-2xl">
                                                                 {task.isCompleted ? "✅" : "⏰"}
                                                             </span>
-                                                            <h3
-                                                                className="font-bold"
-                                                                style={{ color: "#FF6B6B" }}
-                                                            >
-                                                                @{task.authorUsername}
-                                                            </h3>
-                                                            <span className="text-xs bg-gray-700 px-2 py-1 rounded">
-                                                                Task
-                                                            </span>
+                                                            <div>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <h3 className="font-bold text-lg bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">
+                                                                        @{task.authorUsername}
+                                                                    </h3>
+                                                                    <span className="bg-gradient-to-r from-sky-100 to-blue-100 text-sky-700 px-3 py-1 rounded-full text-sm font-medium">
+                                                                        Task
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-slate-500 mt-1">
+                                                                    Created: {task.createdAt
+                                                                    ? task.createdAt.toLocaleDateString()
+                                                                    : "Unknown date"}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                        <p className="text-sm text-gray-400">
-                                                            {task.createdAt
-                                                                ? task.createdAt.toLocaleDateString()
-                                                                : "Unknown date"}
-                                                        </p>
+                                                    </div>
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => handleEditTask(task)}
+                                                            className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white px-4 py-2 rounded-xl font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                        >
+                                                            ✏️ Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteTask(task.id)}
+                                                            className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-xl font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                        >
+                                                            🗑️ Delete
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() => handleEditTask(task)}
-                                                        className="px-3 py-1 rounded text-sm"
-                                                        style={{
-                                                            backgroundColor: "#FF6B6B",
-                                                            color: "white",
-                                                        }}
-                                                        onMouseEnter={(e) =>
-                                                            (e.currentTarget.style.backgroundColor =
-                                                                "#E55A5A")
-                                                        }
-                                                        onMouseLeave={(e) =>
-                                                            (e.currentTarget.style.backgroundColor =
-                                                                "#FF6B6B")
-                                                        }
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteTask(task.id)}
-                                                        className="px-3 py-1 rounded text-sm"
-                                                        style={{
-                                                            backgroundColor: "#DC2626",
-                                                            color: "white",
-                                                        }}
-                                                        onMouseEnter={(e) =>
-                                                            (e.currentTarget.style.backgroundColor =
-                                                                "#B91C1C")
-                                                        }
-                                                        onMouseLeave={(e) =>
-                                                            (e.currentTarget.style.backgroundColor =
-                                                                "#DC2626")
-                                                        }
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </div>
 
-                                            <h4 className={`text-lg font-semibold mb-2 ${
-                                                task.isCompleted ? "line-through text-gray-500" : "text-white"
-                                            }`}>
-                                                {task.title}
-                                            </h4>
+                                                <h4 className={`text-xl font-bold mb-3 ${
+                                                    task.isCompleted
+                                                        ? "line-through text-slate-500"
+                                                        : "text-slate-800"
+                                                }`}>
+                                                    {task.title}
+                                                </h4>
 
-                                            <p className={`mb-4 ${
-                                                task.isCompleted ? "line-through text-gray-500" : "text-gray-200"
-                                            }`}>
-                                                {task.content}
-                                            </p>
+                                                <p className={`mb-4 leading-relaxed ${
+                                                    task.isCompleted
+                                                        ? "line-through text-slate-500"
+                                                        : "text-slate-700"
+                                                }`}>
+                                                    {task.content}
+                                                </p>
 
-                                            {task.deadline && (
-                                                <div className="mb-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm text-gray-400">Deadline:</span>
-                                                        <span
-                                                            className="text-sm font-medium px-2 py-1 rounded"
-                                                            style={{
-                                                                backgroundColor: deadlineStatus?.color + "20",
-                                                                color: deadlineStatus?.color
-                                                            }}
-                                                        >
-                                                            {task.deadline instanceof Date
-                                                                ? task.deadline.toLocaleString()
-                                                                : new Date(task.deadline).toLocaleString()
-                                                            }
-                                                        </span>
-                                                        {deadlineStatus && !task.isCompleted && (
-                                                            <span
-                                                                className="text-xs px-2 py-1 rounded font-medium"
-                                                                style={{
-                                                                    backgroundColor: deadlineStatus.color,
-                                                                    color: "white"
-                                                                }}
-                                                            >
-                                                                {deadlineStatus.text}
-                                                            </span>
+                                                {task.deadline && (
+                                                    <div className="mb-6 p-4 bg-white/60 rounded-2xl border border-sky-100">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center space-x-3">
+                                                                <span className="text-slate-600 font-medium">📅 Deadline:</span>
+                                                                <span className="text-slate-700 font-semibold">
+                                                                    {task.deadline instanceof Date
+                                                                        ? task.deadline.toLocaleString()
+                                                                        : new Date(task.deadline).toLocaleString()
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                            {deadlineStatus && !task.isCompleted && (
+                                                                <span className={`bg-gradient-to-r ${deadlineStatus.colors} text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg`}>
+                                                                    {deadlineStatus.text}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {task.isCompleted && task.completedAt && (
+                                                            <div className="mt-2 text-sm text-green-600 font-medium">
+                                                                ✓ Completed on {new Date(task.completedAt.seconds * 1000).toLocaleString()}
+                                                            </div>
                                                         )}
                                                     </div>
-                                                    {task.isCompleted && task.completedAt && (
-                                                        <div className="text-xs text-green-400 mt-1">
-                                                            ✓ Completed on {new Date(task.completedAt.seconds * 1000).toLocaleString()}
-                                                        </div>
+                                                )}
+
+                                                <div className="flex flex-wrap items-center gap-3">
+                                                    <button
+                                                        onClick={() => handleToggleTaskCompletion(task.id)}
+                                                        className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-bold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                                                            task.isCompleted
+                                                                ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                                                                : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white"
+                                                        }`}
+                                                    >
+                                                        <span>{task.isCompleted ? "✅" : "⭕"}</span>
+                                                        <span>{task.isCompleted ? "Completed" : "Mark Complete"}</span>
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => handleLikeTask(task.id)}
+                                                        className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-bold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl ${
+                                                            currentUser && task.likes?.includes(currentUser.uid)
+                                                                ? "bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+                                                                : "bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white"
+                                                        }`}
+                                                        disabled={!currentUser}
+                                                    >
+                                                        <span>🌟</span>
+                                                        <span>Priority: {task.likeCount || 0}</span>
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => toggleComments(task.id)}
+                                                        className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                    >
+                                                        <span>💬</span>
+                                                        <span>
+                                                            {expandedComments.has(task.id)
+                                                                ? "Hide Comments"
+                                                                : "Add Comments"}
+                                                        </span>
+                                                    </button>
+
+                                                    {task.updatedAt && (
+                                                        <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                                                            ✏️ Edited {task.updatedAt.toDate
+                                                            ? task.updatedAt.toDate().toLocaleDateString()
+                                                            : "Unknown"}
+                                                        </span>
                                                     )}
                                                 </div>
-                                            )}
 
-                                            <div className="flex items-center space-x-4">
-                                                <button
-                                                    onClick={() => handleToggleTaskCompletion(task.id)}
-                                                    className={`flex items-center space-x-2 px-3 py-1 rounded font-medium`}
-                                                    style={{
-                                                        backgroundColor: task.isCompleted ? "#10B981" : "#F59E0B",
-                                                        color: "white",
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            task.isCompleted ? "#059669" : "#D97706";
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.backgroundColor =
-                                                            task.isCompleted ? "#10B981" : "#F59E0B";
-                                                    }}
-                                                >
-                                                    <span>{task.isCompleted ? "✓" : "○"}</span>
-                                                    <span>{task.isCompleted ? "Completed" : "Mark Complete"}</span>
-                                                </button>
-
-                                                <button
-                                                    onClick={() => handleLikeTask(task.id)}
-                                                    className={`flex items-center space-x-2 px-3 py-1 rounded`}
-                                                    style={{
-                                                        backgroundColor:
-                                                            currentUser && task.likes?.includes(currentUser.uid)
-                                                                ? "#FF6B6B"
-                                                                : "#4B5563",
-                                                        color:
-                                                            currentUser && task.likes?.includes(currentUser.uid)
-                                                                ? "white"
-                                                                : "#D1D5DB",
-                                                    }}
-                                                    disabled={!currentUser}
-                                                    onMouseEnter={(e) => {
-                                                        if (
-                                                            currentUser &&
-                                                            task.likes?.includes(currentUser.uid)
-                                                        ) {
-                                                            e.currentTarget.style.backgroundColor =
-                                                                "#E55A5A";
-                                                        } else {
-                                                            e.currentTarget.style.backgroundColor =
-                                                                "#6B7280";
-                                                        }
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        if (
-                                                            currentUser &&
-                                                            task.likes?.includes(currentUser.uid)
-                                                        ) {
-                                                            e.currentTarget.style.backgroundColor =
-                                                                "#FF6B6B";
-                                                        } else {
-                                                            e.currentTarget.style.backgroundColor =
-                                                                "#4B5563";
-                                                        }
-                                                    }}
-                                                >
-                                                    <span>Priority:</span>
-                                                    <span>{task.likeCount || 0}</span>
-                                                </button>
-
-                                                <button
-                                                    onClick={() => toggleComments(task.id)}
-                                                    className="flex items-center space-x-2 px-3 py-1 rounded text-white"
-                                                    style={{ backgroundColor: "#FF6B6B" }}
-                                                    onMouseEnter={(e) =>
-                                                        (e.currentTarget.style.backgroundColor = "#E55A5A")
-                                                    }
-                                                    onMouseLeave={(e) =>
-                                                        (e.currentTarget.style.backgroundColor = "#FF6B6B")
-                                                    }
-                                                >
-                                                    <span>
-                                                        {expandedComments.has(task.id)
-                                                            ? "Hide Comments"
-                                                            : "Add Comments"}
-                                                    </span>
-                                                </button>
-
-                                                {task.updatedAt && (
-                                                    <span className="text-xs text-gray-500">
-                                                        (edited{" "}
-                                                        {task.updatedAt.toDate
-                                                            ? task.updatedAt.toDate().toLocaleString()
-                                                            : "Unknown"}
-                                                        )
-                                                    </span>
+                                                {expandedComments.has(task.id) && (
+                                                    <div className="mt-6 p-4 bg-white/60 rounded-2xl border border-sky-100">
+                                                        <CommentCRUD
+                                                            currentUser={currentUser}
+                                                            currentUserData={currentUserData}
+                                                            postId={task.id}
+                                                        />
+                                                    </div>
                                                 )}
-                                            </div>
-
-                                            {expandedComments.has(task.id) && (
-                                                <CommentCRUD
-                                                    currentUser={currentUser}
-                                                    currentUserData={currentUserData}
-                                                    postId={task.id}
-                                                />
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            );
-                        })
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     ) : (
-                        <div className="text-center text-gray-400 py-8">
-                            No tasks yet. Create your first task to get started!
+                        <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-12 border border-sky-200 shadow-xl text-center">
+                            <div className="text-8xl mb-6">📝</div>
+                            <h3 className="text-2xl font-bold text-slate-700 mb-4">No Tasks Yet!</h3>
+                            <p className="text-slate-600 text-lg mb-6">
+                                Create your first task to get started on your productivity journey! ✨
+                            </p>
+                            <div className="flex justify-center space-x-2 text-2xl animate-bounce">
+                                <span>🚀</span>
+                                <span>💪</span>
+                                <span>🎯</span>
+                            </div>
                         </div>
                     )
                 ) : (
-                    <div className="text-center text-gray-400 py-8">
-                        Please log in to view and manage your tasks.
+                    <div className="bg-white/70 backdrop-blur-lg rounded-3xl p-12 border border-sky-200 shadow-xl text-center">
+                        <div className="text-8xl mb-6">🔐</div>
+                        <h3 className="text-2xl font-bold text-slate-700 mb-4">Login Required</h3>
+                        <p className="text-slate-600 text-lg">
+                            Please log in to view and manage your tasks! 🌟
+                        </p>
                     </div>
                 )}
             </div>
